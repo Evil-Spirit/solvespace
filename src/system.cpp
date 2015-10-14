@@ -103,6 +103,12 @@ void System::SolveBySubstitution(void) {
                 continue;
             }
 
+            // if the params are not equal, it is better to throw they both to the Jacobian
+            // and solve them honestly, after they are solved, they can be susbtituted normally.
+            // this approach works fine when we are connecting point of the two well-constrained parts
+            // without this, points can`t travel big ditances, but with it, all passed much better.
+            if(fabs(SK.GetParam(a)->val - SK.GetParam(b)->val) > CONVERGE_TOLERANCE) continue;
+            
             if(IsDragged(a)) {
                 // A is being dragged, so A should stay, and B should go
                 hParam t = a;
