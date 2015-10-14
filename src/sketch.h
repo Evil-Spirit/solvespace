@@ -534,6 +534,12 @@ public:
 
 class ConstraintBase {
 public:
+    
+    ConstraintBase() {
+        option = 0;
+        is_signed = true;
+    }
+    
     int         tag;
     hConstraint h;
 
@@ -592,6 +598,8 @@ public:
     hEntity     entityD;
     bool        other;
     bool        other2;
+    int         option;     // for signed expressions
+    bool        is_signed;  // a signed dimension, forces using signed expression as much as possible
 
     bool        reference;  // a ref dimension, that generates no eqs
     NameStr     comment;    // since comments are represented as constraints
@@ -603,6 +611,7 @@ public:
     // Some helpers when generating symbolic constraint equations
     void ModifyToSatisfy(void);
     void AddEq(IdList<Equation,hEquation> *l, Expr *expr, int index);
+    Expr *GetAngle(hEntity wrkpl, ExprVector ae, ExprVector be);
     static Expr *DirectionCosine(hEntity wrkpl, ExprVector ae, ExprVector be);
     static Expr *Distance(hEntity workplane, hEntity pa, hEntity pb);
     static Expr *PointLineDistance(hEntity workplane, hEntity pt, hEntity ln);

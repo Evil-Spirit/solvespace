@@ -128,6 +128,38 @@ Expr *ConstraintBase::Distance(hEntity wrkpl, hEntity hpa, hEntity hpb) {
 }
 
 //-----------------------------------------------------------------------------
+// Return the angle between two vectors. If a workplane is
+// specified, then it's the angle of their projections into that workplane.
+//-----------------------------------------------------------------------------
+Expr *ConstraintBase::GetAngle(hEntity wrkpl, ExprVector ae, ExprVector be) {
+    if(wrkpl.v == EntityBase::FREE_IN_3D.v) {
+        // calculate angle through 
+        // atan2(length(cross(ae, be)), dot(ae, be))
+        Expr *y = ae.Cross(be).Magnitude();
+        Expr *x = ae.Dot(be);
+        return y->ATan2(x);
+    }
+    
+    EntityBase *w = SK.GetEntity(wrkpl);
+    ExprVector u = w->Normal()->NormalExprsU();
+    ExprVector v = w->Normal()->NormalExprsV();
+    Expr *ua = u.Dot(ae);
+    Expr *va = v.Dot(ae);
+    Expr *ub = u.Dot(be);
+    Expr *vb = v.Dot(be);
+    ae.x = ua;
+    ae.y = va;
+    be.x = ub;
+    be.y = vb;
+    
+    // transform the first vector by the basis made from other vector
+    Expr *nu = be.x->Times(ae.x)->Plus(be.y->Times(ae.y));
+    Expr *nv = ae.x->Times(be.y)->Minus(ae.y->Times(be.x));
+    
+    return nv->ATan2(nu);
+}
+
+//-----------------------------------------------------------------------------
 // Return the cosine of the angle between two vectors. If a workplane is
 // specified, then it's the cosine of their projections into that workplane.
 //-----------------------------------------------------------------------------
@@ -165,32 +197,26 @@ ExprVector ConstraintBase::PointInThreeSpace(hEntity workplane,
 }
 
 void ConstraintBase::ModifyToSatisfy(void) {
+    // We'll fix these ones up by looking at their symbolic equation;
+    // that means no extra work.
+    IdList<Equation,hEquation> l;
+    // An uninit IdList could lead us to free some random address, bad.
+    ZERO(&l);
+    // Generate the equations even if this is a reference dimension
+    GenerateReal(&l);
+    if(l.n != 1) oops();
+
+    // These equations are written in the form f(...) - d = 0, where
+    // d is the value of the valA.
+    double delta = (l.elem[0].e)->Eval();
+    
     if(type == ANGLE) {
-        Vector a = SK.GetEntity(entityA)->VectorGetNum();
-        Vector b = SK.GetEntity(entityB)->VectorGetNum();
-        if(other) a = a.ScaledBy(-1);
-        if(workplane.v != EntityBase::FREE_IN_3D.v) {
-            a = a.ProjectVectorInto(workplane);
-            b = b.ProjectVectorInto(workplane);
-        }
-        double c = (a.Dot(b))/(a.Magnitude() * b.Magnitude());
-        valA = acos(c)*180/PI;
-    } else {
-        // We'll fix these ones up by looking at their symbolic equation;
-        // that means no extra work.
-        IdList<Equation,hEquation> l;
-        // An uninit IdList could lead us to free some random address, bad.
-        ZERO(&l);
-        // Generate the equations even if this is a reference dimension
-        GenerateReal(&l);
-        if(l.n != 1) oops();
-
-        // These equations are written in the form f(...) - d = 0, where
-        // d is the value of the valA.
-        valA += (l.elem[0].e)->Eval();
-
-        l.Clear();
+        delta *= 180.0 / PI;
     }
+    
+    valA += delta;
+    
+    l.Clear();
 }
 
 void ConstraintBase::AddEq(IdList<Equation,hEquation> *l, Expr *expr, int index)
@@ -623,25 +649,17 @@ void ConstraintBase::GenerateReal(IdList<Equation,hEquation> *l) {
             ExprVector ae = a->VectorGetExprs();
             ExprVector be = b->VectorGetExprs();
             if(other) ae = ae.ScaledBy(Expr::From(-1));
-            Expr *c = DirectionCosine(workplane, ae, be);
-
+            Expr *angle = GetAngle(workplane, ae, be);
+            
+            if(!is_signed) angle = angle->Abs();
+            Expr *rads = NULL;
             if(type == ANGLE) {
-                // The direction cosine is equal to the cosine of the
-                // specified angle
-                Expr *rads = exA->Times(Expr::From(PI/180)),
-                     *rc   = rads->Cos();
-                double arc = fabs(rc->Eval());
-                // avoid false detection of inconsistent systems by gaining
-                // up as the difference in dot products gets small at small
-                // angles; doubles still have plenty of precision, only
-                // problem is that rank test
-                Expr *mult = Expr::From(arc > 0.99 ? 0.01/(1.00001 - arc) : 1);
-                AddEq(l, (c->Minus(rc))->Times(mult), 0);
+                rads = exA->Times(Expr::From(PI / 180.0));
             } else {
-                // The dot product (and therefore the direction cosine)
-                // is equal to zero, perpendicular.
-                AddEq(l, c, 0);
+                rads = Expr::From(PI / 2.0);
+                if(is_signed && option == 1) rads = rads->Negate();
             }
+            AddEq(l, angle->Minus(rads), 0);
             break;
         }
 
@@ -753,9 +771,18 @@ void ConstraintBase::GenerateReal(IdList<Equation,hEquation> *l) {
                 AddEq(l, VectorsParallel(0, a, b), 0);
                 AddEq(l, VectorsParallel(1, a, b), 1);
             } else {
-                EntityBase *w = SK.GetEntity(workplane);
-                ExprVector wn = w->Normal()->NormalExprsN();
-                AddEq(l, (a.Cross(b)).Dot(wn), 0);
+                if(!is_signed) {
+                    EntityBase *w = SK.GetEntity(workplane);
+                    ExprVector wn = w->Normal()->NormalExprsN();
+                    AddEq(l, (a.Cross(b)).Dot(wn), 0);
+                } else {
+                    Expr *angle = GetAngle(workplane, a, b);
+                    if(option == 0) {
+                        AddEq(l, angle, 0);
+                    } else {
+                        AddEq(l, angle->Abs()->Minus(Expr::From(PI)), 0);
+                    }
+                }
             }
             break;
         }
