@@ -273,6 +273,7 @@ int Expr::Children(void) {
         case MINUS:
         case TIMES:
         case DIV:
+        case ATAN2:
             return 2;
 
         case NEGATE:
@@ -282,6 +283,8 @@ int Expr::Children(void) {
         case COS:
         case ASIN:
         case ACOS:
+        case ABS:
+        case SGN:
             return 1;
 
         default: oops();
@@ -353,7 +356,13 @@ double Expr::Eval(void) {
         case COS:           return cos(a->Eval());
         case ACOS:          return acos(a->Eval());
         case ASIN:          return asin(a->Eval());
-
+        case ABS:           return fabs(a->Eval());
+        case SGN: {
+            double v = a->Eval();
+            return double((0.0 < v) - (v < 0.0));
+        }
+        case ATAN2:        return atan2(a->Eval(), b->Eval());
+        
         default: oops();
     }
 }
@@ -397,6 +406,11 @@ Expr *Expr::PartialWrt(hParam p) {
             return (From(-1)->Div((From(1)->Minus(a->Square()))->Sqrt()))
                         ->Times(a->PartialWrt(p));
 
+        case ABS: return (a->Sgn())->Times(a->PartialWrt(p));
+        case ATAN2:
+            da = a->Div(b->Square()->Plus(a->Square()))->Negate()->Times(b->PartialWrt(p));
+            db = b->Div(b->Square()->Plus(a->Square()))->Times(a->PartialWrt(p));
+            return da->Plus(db);
         default: oops();
     }
 }
@@ -443,6 +457,7 @@ Expr *Expr::FoldConstants(void) {
         case TIMES:
         case DIV:
         case PLUS:
+        case ATAN2:
             // If both ops are known, then we can evaluate immediately
             if(n->a->op == CONSTANT && n->b->op == CONSTANT) {
                 double nv = n->Eval();
@@ -481,6 +496,8 @@ Expr *Expr::FoldConstants(void) {
         case COS:
         case ASIN:
         case ACOS:
+        case SGN:
+        case ABS:
             if(n->a->op == CONSTANT) {
                 double nv = n->Eval();
                 n->op = CONSTANT;

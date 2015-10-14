@@ -38,7 +38,10 @@ public:
         COS            = 108,
         ASIN           = 109,
         ACOS           = 110,
-
+        ATAN2          = 111,
+        ABS            = 112,
+        SGN            = 113,
+        
         // Special helpers for when we're parsing an expression from text.
         // Initially, literals (like a constant number) appear in the same
         // format as they will in the finished expression, but the operators
@@ -77,7 +80,8 @@ public:
     inline Expr *Minus(Expr *b_) { return AnyOp(MINUS, b_); }
     inline Expr *Times(Expr *b_) { return AnyOp(TIMES, b_); }
     inline Expr *Div  (Expr *b_) { return AnyOp(DIV,   b_); }
-
+    inline Expr *ATan2 (Expr *b_) { return AnyOp(ATAN2, b_); }
+    
     inline Expr *Negate(void) { return AnyOp(NEGATE, NULL); }
     inline Expr *Sqrt  (void) { return AnyOp(SQRT,   NULL); }
     inline Expr *Square(void) { return AnyOp(SQUARE, NULL); }
@@ -85,7 +89,9 @@ public:
     inline Expr *Cos   (void) { return AnyOp(COS,    NULL); }
     inline Expr *ASin  (void) { return AnyOp(ASIN,   NULL); }
     inline Expr *ACos  (void) { return AnyOp(ACOS,   NULL); }
-
+    inline Expr *Abs (void) { return AnyOp(ABS, NULL); }
+    inline Expr *Sgn (void) { return AnyOp(SGN, NULL); }
+    
     Expr *PartialWrt(hParam p);
     double Eval(void);
     uint64_t ParamsUsed(void);
