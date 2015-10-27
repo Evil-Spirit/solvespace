@@ -336,6 +336,10 @@ SLVS_C_EQUAL_LINE_ARC_LEN*
     The length of the line entityA is equal to the length of the circular
     arc entityB.
 
+SLVS_C_LENGTH_DIFFERENCE    
+
+    The lengths of line entityA and line entityB differ by valA.
+
 SLVS_C_SYMMETRIC*
 
     The points ptA and ptB are symmetric about the plane entityA. This
