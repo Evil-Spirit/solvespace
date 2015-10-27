@@ -693,8 +693,8 @@ int64_t SolveSpace::GetMilliseconds(void)
 
 int64_t SolveSpace::GetUnixTime(void)
 {
-    __time64_t ret;
-    _time64(&ret);
+    time_t ret;
+    time(&ret);
     return (int64_t)ret;
 }
 
