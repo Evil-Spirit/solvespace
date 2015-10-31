@@ -636,8 +636,7 @@ void Entity::DrawOrGetDistance(void) {
             // Nothing but the curve(s).
             break;
 
-        case FACE_NORMAL_PT:
-        case FACE_XPROD:
+        case FACE_QUAT_PT:
         case FACE_N_ROT_TRANS:
         case FACE_N_TRANS:
         case FACE_N_ROT_AA:

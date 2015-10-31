@@ -321,8 +321,7 @@ public:
         DISTANCE               =  4000,
         DISTANCE_N_COPY        =  4001,
 
-        FACE_NORMAL_PT         =  5000,
-        FACE_XPROD             =  5001,
+        FACE_QUAT_PT           =  5005,
         FACE_N_ROT_TRANS       =  5002,
         FACE_N_TRANS           =  5003,
         FACE_N_ROT_AA          =  5004,
@@ -393,6 +392,7 @@ public:
     bool IsFace(void);
     ExprVector FaceGetNormalExprs(void);
     Vector FaceGetNormalNum(void);
+    Quaternion FaceGetQuatNum(void);
     ExprVector FaceGetPointExprs(void);
     Vector FaceGetPointNum(void);
 
