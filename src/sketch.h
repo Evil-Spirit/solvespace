@@ -130,6 +130,7 @@ public:
         // For drawings in 2d
         WORKPLANE_BY_POINT_ORTHO   = 6000,
         WORKPLANE_BY_LINE_SEGMENTS = 6001,
+        WORKPLANE_BY_FACE          = 6002,
         // For extrudes, translates, and rotates
         ONE_SIDED                  = 7000,
         TWO_SIDED                  = 7001
