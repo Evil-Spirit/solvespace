@@ -327,10 +327,10 @@ public:
         DISTANCE               =  4000,
         DISTANCE_N_COPY        =  4001,
 
-        FACE_QUAT_PT           =  5005,
         FACE_N_ROT_TRANS       =  5002,
         FACE_N_TRANS           =  5003,
         FACE_N_ROT_AA          =  5004,
+        FACE_QUAT_PT           =  5005,
 
 
         WORKPLANE              = 10000,

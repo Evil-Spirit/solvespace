@@ -663,9 +663,9 @@ void SShell::MakeFromRevolutionOf(SBezierLoopSet *sbls, Vector pt, Vector axis, 
                                                              (PI/2)*j,
                                                              (PI/2)*(j+1));
                     ss.color = color;
-                    if(group != NULL && sb->parent_hv != 0) {
+                    if(group != NULL && sb->entity != 0) {
                         hEntity he;
-                        he.v = sb->parent_hv;
+                        he.v = sb->entity;
                         hEntity hface = group->Remap(he, Group::REMAP_LINE_TO_FACE);
                         if(SK.entity.FindByIdNoOops(hface) != NULL) {
                             ss.face = hface.v;

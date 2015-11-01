@@ -77,7 +77,7 @@ public:
     int             deg;
     Vector          ctrl[4];
     double          weight[4];
-    int             parent_hv;              // handle of the entity, from which bezier has constructed
+    int             entity;              // handle of the entity, from which bezier has constructed
 
     Vector PointAt(double t);
     Vector TangentAt(double t);

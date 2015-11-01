@@ -102,8 +102,7 @@ void Group::MenuGroup(int id) {
                 }
                 if(SS.GW.projRight.Dot(ut) < 0) g.predef.negateU = true;
                 if(SS.GW.projUp.   Dot(vt) < 0) g.predef.negateV = true;
-            } else 
-            if(gs.faces == 1 && gs.n == 1) {
+            } else if(gs.faces == 1 && gs.n == 1) {
                 // workplane by face
                 g.subtype = WORKPLANE_BY_FACE;
                 
@@ -306,7 +305,7 @@ char *Group::DescriptionString(void) {
 }
 
 void Group::Activate(void) {
-    if(type == EXTRUDE || type == IMPORTED || type == LATHE) {
+    if(type == EXTRUDE || type == IMPORTED || type == LATHE || type == TRANSLATE || type == ROTATE) {
         SS.GW.showFaces = true;
     } else {
         SS.GW.showFaces = false;
@@ -348,8 +347,7 @@ void Group::Generate(IdList<Entity,hEntity> *entity,
                 // Already given, numerically.
                 q = predef.q;
                 origin = SK.GetEntity(predef.origin)->PointGetNum();
-            } else 
-            if(subtype == WORKPLANE_BY_FACE) {
+            } else if(subtype == WORKPLANE_BY_FACE) {
                 Entity *face = SK.GetEntity(predef.entityB);
                 q = face->FaceGetQuatNum();
                 
@@ -733,9 +731,8 @@ void Group::MakeLatheCircles(IdList<Entity,hEntity> *el, IdList<Param,hParam> *p
         el->Add(&n);
         en.normal = n.h;
         el->Add(&en);
-    } else
-    // An axis-perpendicular revolved line borns new face
-    if(ep->type == Entity::LINE_SEGMENT) {
+    } else if(ep->type == Entity::LINE_SEGMENT) {
+        // An axis-perpendicular revolved line borns new face
         
         Vector a = SK.GetEntity(ep->point[0])->PointGetNum();
         Vector b = SK.GetEntity(ep->point[1])->PointGetNum();
