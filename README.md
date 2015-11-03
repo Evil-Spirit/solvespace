@@ -111,7 +111,13 @@ and point cmake-gui to the source tree and that directory. Press
 "Configure" and "Generate", then open `build\solvespace.sln` with
 Visual C++ and build it.
 
+Alternatuively you can build using [MinGW][mingw]. Run
+cmake-gui as above but when you peress "Configure" choose "MSYS Makefiles".
+After that in a command prompt in the `build` directory type `make`.
+The directories `mingw\bin` and `MinGW\msys\1.0\bin` must be in your path.
+
 [cmakewin]: http://www.cmake.org/download/#latest
+[mingw]: http://www.mingw.org/
 
 License
 -------
