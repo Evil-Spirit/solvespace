@@ -204,8 +204,7 @@ void Entity::CalculateNumerical(bool forExport) {
     }
     if(IsFace()) {
         actPoint  = FaceGetPointNum();
-        Vector n = FaceGetNormalNum();
-        actNormal = Quaternion::From(0, n.x, n.y, n.z);
+        actNormal = FaceGetQuatNum();
     }
     if(forExport) {
         // Visibility in copied import entities follows source file
@@ -369,6 +368,7 @@ void Entity::GenerateBezierCurves(SBezierList *sbl) {
             Vector a = SK.GetEntity(point[0])->PointGetNum();
             Vector b = SK.GetEntity(point[1])->PointGetNum();
             sb = SBezier::From(a, b);
+            sb.entity = h.v;
             sbl->l.Add(&sb);
             break;
         }
@@ -636,8 +636,7 @@ void Entity::DrawOrGetDistance(void) {
             // Nothing but the curve(s).
             break;
 
-        case FACE_NORMAL_PT:
-        case FACE_XPROD:
+        case FACE_QUAT_PT:
         case FACE_N_ROT_TRANS:
         case FACE_N_TRANS:
         case FACE_N_ROT_AA:

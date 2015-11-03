@@ -696,7 +696,7 @@ void SolveSpaceUI::ExportMeshAsThreeJsTo(FILE *f, const char * filename, SMesh *
     "  </head>\n"
     "  <body>\n"
     "    <script>\n"
-    "    solvespace = function(obj, params) {\n"
+    "    window.solvespace = function(obj, params) {\n"
     "      var scene, edgeScene, camera, edgeCamera, renderer;\n"
     "      var geometry, controls, material, mesh, edges;\n"
     "      var width, height, edgeBias;\n"
@@ -749,6 +749,7 @@ void SolveSpaceUI::ExportMeshAsThreeJsTo(FILE *f, const char * filename, SMesh *
     "        scene.add(ambientLight);\n"
     "\n"
     "        renderer = new THREE.WebGLRenderer();\n"
+    "        renderer.setPixelRatio(window.devicePixelRatio);\n"
     "        renderer.setSize(width, height);\n"
     "        renderer.autoClear = false;\n"
     "\n"
@@ -901,6 +902,12 @@ void SolveSpaceUI::ExportMeshAsThreeJsTo(FILE *f, const char * filename, SMesh *
     lastSlash++; // Point one past last slash.
     strcpy(baseFilename, lastSlash); // Copy the file w/ extension.
     *strrchr(baseFilename, '.') = '\0'; // Strip extension.
+
+    for(int i = 0; i < strlen(baseFilename); i++) {
+        if(!isalpha(baseFilename[i]) &&
+           /* also permit UTF-8 */ !((unsigned char)baseFilename[i] >= 0x80))
+            baseFilename[i] = '_';
+    }
 
     fprintf(f, html, baseFilename, baseFilename);
     fprintf(f, "var three_js_%s = {\n"

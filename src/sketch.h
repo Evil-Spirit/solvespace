@@ -130,6 +130,7 @@ public:
         // For drawings in 2d
         WORKPLANE_BY_POINT_ORTHO   = 6000,
         WORKPLANE_BY_LINE_SEGMENTS = 6001,
+        WORKPLANE_BY_FACE          = 6002,
         // For extrudes, translates, and rotates
         ONE_SIDED                  = 7000,
         TWO_SIDED                  = 7001
@@ -214,10 +215,15 @@ public:
         REMAP_TOP          = 1001,
         REMAP_BOTTOM       = 1002,
         REMAP_PT_TO_LINE   = 1003,
-        REMAP_LINE_TO_FACE = 1004
+        REMAP_LINE_TO_FACE = 1004,
+        REMAP_LATHE_START  = 1006,
+        REMAP_LATHE_END    = 1007,
+        REMAP_PT_TO_ARC    = 1008,
+        REMAP_PT_TO_NORMAL = 1009,
     };
     hEntity Remap(hEntity in, int copyNumber);
     void MakeExtrusionLines(EntityList *el, hEntity in);
+    void MakeLatheCircles(IdList<Entity,hEntity> *el, IdList<Param,hParam> *param, hEntity in, Vector pt, Vector axis, int ai);
     void MakeExtrusionTopBottomFaces(EntityList *el, hEntity pt);
     void CopyEntity(EntityList *el,
                     Entity *ep, int timesApplied, int remap,
@@ -321,11 +327,10 @@ public:
         DISTANCE               =  4000,
         DISTANCE_N_COPY        =  4001,
 
-        FACE_NORMAL_PT         =  5000,
-        FACE_XPROD             =  5001,
         FACE_N_ROT_TRANS       =  5002,
         FACE_N_TRANS           =  5003,
         FACE_N_ROT_AA          =  5004,
+        FACE_QUAT_PT           =  5005,
 
 
         WORKPLANE              = 10000,
@@ -393,6 +398,7 @@ public:
     bool IsFace(void);
     ExprVector FaceGetNormalExprs(void);
     Vector FaceGetNormalNum(void);
+    Quaternion FaceGetQuatNum(void);
     ExprVector FaceGetPointExprs(void);
     Vector FaceGetPointNum(void);
 

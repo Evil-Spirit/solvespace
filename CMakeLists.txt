@@ -75,7 +75,7 @@ if(WIN32)
     find_package(PNG)
 
     if(NOT PNG_FOUND)
-        message(STATUS "Using in-tree libpng")
+        message(STATUS "Using in-tree zlib")
 
         add_subdirectory(extlib/zlib)
 

@@ -583,8 +583,7 @@ Quaternion EntityBase::PointGetQuaternion(void) {
 
 bool EntityBase::IsFace(void) {
     switch(type) {
-        case FACE_NORMAL_PT:
-        case FACE_XPROD:
+        case FACE_QUAT_PT:
         case FACE_N_ROT_TRANS:
         case FACE_N_TRANS:
         case FACE_N_ROT_AA:
@@ -595,108 +594,149 @@ bool EntityBase::IsFace(void) {
 }
 
 ExprVector EntityBase::FaceGetNormalExprs(void) {
-    ExprVector r;
-    if(type == FACE_NORMAL_PT) {
-        Vector v = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-        r = ExprVector::From(v.WithMagnitude(1));
-    } else if(type == FACE_XPROD) {
-        ExprVector vc = ExprVector::From(param[0], param[1], param[2]);
-        ExprVector vn =
-            ExprVector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-        r = vc.Cross(vn);
-        r = r.WithMagnitude(Expr::From(1.0));
-    } else if(type == FACE_N_ROT_TRANS) {
-        // The numerical normal vector gets the rotation; the numerical
-        // normal has magnitude one, and the rotation doesn't change that,
-        // so there's no need to fix it up.
-        r = ExprVector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-        ExprQuaternion q =
-            ExprQuaternion::From(param[3], param[4], param[5], param[6]);
-        r = q.Rotate(r);
-    } else if(type == FACE_N_TRANS) {
-        r = ExprVector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-    } else if(type == FACE_N_ROT_AA) {
-        r = ExprVector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-        ExprQuaternion q = GetAxisAngleQuaternionExprs(3);
-        r = q.Rotate(r);
-    } else oops();
+    ExprVector r = ExprVector::From(numNormal.RotationN().WithMagnitude(1.0));
+    switch(type) {
+        case FACE_QUAT_PT:
+        case FACE_N_TRANS:
+            // do nothing
+            break;
+        case FACE_N_ROT_AA: {
+            // rotate axis angle
+            ExprQuaternion q = GetAxisAngleQuaternionExprs(3);
+            r = q.Rotate(r);
+            break;
+        }
+        case FACE_N_ROT_TRANS: {
+            // The numerical normal vector gets the rotation; the numerical
+            // normal has magnitude one, and the rotation doesn't change that,
+            // so there's no need to fix it up.
+            ExprQuaternion q = ExprQuaternion::From(param[3], param[4], param[5], param[6]);
+            r = q.Rotate(r);
+            break;
+        }
+        default: oops();
+    }
     return r;
 }
 
 Vector EntityBase::FaceGetNormalNum(void) {
-    Vector r;
-    if(type == FACE_NORMAL_PT) {
-        r = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-    } else if(type == FACE_XPROD) {
-        Vector vc = Vector::From(param[0], param[1], param[2]);
-        Vector vn = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-        r = vc.Cross(vn);
-    } else if(type == FACE_N_ROT_TRANS) {
-        // The numerical normal vector gets the rotation
-        r = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-        Quaternion q = Quaternion::From(param[3], param[4], param[5], param[6]);
-        r = q.Rotate(r);
-    } else if(type == FACE_N_TRANS) {
-        r = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-    } else if(type == FACE_N_ROT_AA) {
-        r = Vector::From(numNormal.vx, numNormal.vy, numNormal.vz);
-        Quaternion q = GetAxisAngleQuaternion(3);
-        r = q.Rotate(r);
-    } else oops();
-    return r.WithMagnitude(1);
+    Vector r = numNormal.RotationN().WithMagnitude(1.0);
+    switch(type) {
+        case FACE_QUAT_PT:
+        case FACE_N_TRANS:
+            // do nothing
+            break;
+        case FACE_N_ROT_AA: {
+            // rotate axis angle
+            Quaternion q = GetAxisAngleQuaternion(3);
+            r = q.Rotate(r);
+            break;
+        }
+        case FACE_N_ROT_TRANS: {
+            // The numerical normal vector gets the rotation; the numerical
+            // normal has magnitude one, and the rotation doesn't change that,
+            // so there's no need to fix it up.
+            Quaternion q = Quaternion::From(param[3], param[4], param[5], param[6]);
+            r = q.Rotate(r);
+            break;
+        }
+        default: oops();
+    }
+    return r;
+}
+
+Quaternion EntityBase::FaceGetQuatNum(void) {
+    Quaternion r;
+    switch(type) {
+        case FACE_QUAT_PT:
+        case FACE_N_TRANS:
+            r = numNormal;
+            break;
+        case FACE_N_ROT_AA: {
+            // rotate axis angle
+            Quaternion q = GetAxisAngleQuaternion(3);
+            r = q.Times(numNormal);
+            break;
+        }
+        case FACE_N_ROT_TRANS: {
+            // The numerical normal vector gets the rotation; the numerical
+            // normal has magnitude one, and the rotation doesn't change that,
+            // so there's no need to fix it up.
+            Quaternion q = Quaternion::From(param[3], param[4], param[5], param[6]);
+            r = q.Times(numNormal);
+            break;
+        }
+        default: oops();
+    }
+    return r;
 }
 
 ExprVector EntityBase::FaceGetPointExprs(void) {
     ExprVector r;
-    if(type == FACE_NORMAL_PT) {
-        r = SK.GetEntity(point[0])->PointGetExprs();
-    } else if(type == FACE_XPROD) {
-        r = ExprVector::From(numPoint);
-    } else if(type == FACE_N_ROT_TRANS) {
-        // The numerical point gets the rotation and translation.
-        ExprVector trans = ExprVector::From(param[0], param[1], param[2]);
-        ExprQuaternion q =
-            ExprQuaternion::From(param[3], param[4], param[5], param[6]);
-        r = ExprVector::From(numPoint);
-        r = q.Rotate(r);
-        r = r.Plus(trans);
-    } else if(type == FACE_N_TRANS) {
-        ExprVector trans = ExprVector::From(param[0], param[1], param[2]);
-        r = ExprVector::From(numPoint);
-        r = r.Plus(trans.ScaledBy(Expr::From(timesApplied)));
-    } else if(type == FACE_N_ROT_AA) {
-        ExprVector trans = ExprVector::From(param[0], param[1], param[2]);
-        ExprQuaternion q = GetAxisAngleQuaternionExprs(3);
-        r = ExprVector::From(numPoint);
-        r = r.Minus(trans);
-        r = q.Rotate(r);
-        r = r.Plus(trans);
-    } else oops();
+    switch(type) {
+        case FACE_QUAT_PT:
+            r = SK.GetEntity(point[0])->PointGetExprs();
+            break;
+        case FACE_N_TRANS: {
+            ExprVector trans = ExprVector::From(param[0], param[1], param[2]);
+            r = ExprVector::From(numPoint);
+            r = r.Plus(trans.ScaledBy(Expr::From(timesApplied)));
+            break;
+        }
+        case FACE_N_ROT_AA: {
+            ExprVector trans = ExprVector::From(param[0], param[1], param[2]);
+            ExprQuaternion q = GetAxisAngleQuaternionExprs(3);
+            r = ExprVector::From(numPoint);
+            r = r.Minus(trans);
+            r = q.Rotate(r);
+            r = r.Plus(trans);
+            break;
+        }
+        case FACE_N_ROT_TRANS: {
+            // The numerical normal vector gets the rotation; the numerical
+            // normal has magnitude one, and the rotation doesn't change that,
+            // so there's no need to fix it up.
+            ExprVector trans = ExprVector::From(param[0], param[1], param[2]);
+            ExprQuaternion q = ExprQuaternion::From(param[3], param[4], param[5], param[6]);
+            r = ExprVector::From(numPoint);
+            r = q.Rotate(r);
+            r = r.Plus(trans);
+            break;
+        }
+        default: oops();
+    }
     return r;
 }
 
 Vector EntityBase::FaceGetPointNum(void) {
     Vector r;
-    if(type == FACE_NORMAL_PT) {
-        r = SK.GetEntity(point[0])->PointGetNum();
-    } else if(type == FACE_XPROD) {
-        r = numPoint;
-    } else if(type == FACE_N_ROT_TRANS) {
-        // The numerical point gets the rotation and translation.
-        Vector trans = Vector::From(param[0], param[1], param[2]);
-        Quaternion q = Quaternion::From(param[3], param[4], param[5], param[6]);
-        r = q.Rotate(numPoint);
-        r = r.Plus(trans);
-    } else if(type == FACE_N_TRANS) {
-        Vector trans = Vector::From(param[0], param[1], param[2]);
-        r = numPoint.Plus(trans.ScaledBy(timesApplied));
-    } else if(type == FACE_N_ROT_AA) {
-        Vector trans = Vector::From(param[0], param[1], param[2]);
-        Quaternion q = GetAxisAngleQuaternion(3);
-        r = numPoint.Minus(trans);
-        r = q.Rotate(r);
-        r = r.Plus(trans);
-    } else oops();
+    switch(type) {
+        case FACE_QUAT_PT:
+            r = SK.GetEntity(point[0])->PointGetNum();
+            break;
+        case FACE_N_TRANS: {
+            Vector trans = Vector::From(param[0], param[1], param[2]);
+            r = numPoint.Plus(trans.ScaledBy(timesApplied));
+            break;
+        }
+        case FACE_N_ROT_AA: {
+            Vector trans = Vector::From(param[0], param[1], param[2]);
+            Quaternion q = GetAxisAngleQuaternion(3);
+            r = numPoint.Minus(trans);
+            r = q.Rotate(r);
+            r = r.Plus(trans);
+            break;
+        }
+        case FACE_N_ROT_TRANS: {
+            // The numerical point gets the rotation and translation.
+            Vector trans = Vector::From(param[0], param[1], param[2]);
+            Quaternion q = Quaternion::From(param[3], param[4], param[5], param[6]);
+            r = q.Rotate(numPoint);
+            r = r.Plus(trans);
+            break;
+        }
+        default: oops();
+    }
     return r;
 }
 
