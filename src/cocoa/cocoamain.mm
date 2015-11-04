@@ -375,6 +375,8 @@ CONVERT(Rect)
         chr |= SolveSpace::GraphicsWindow::SHIFT_MASK;
     if(flags & NSCommandKeyMask)
         chr |= SolveSpace::GraphicsWindow::CTRL_MASK;
+    if(flags & NSAlternateKeyMask)
+        chr |= SolveSpace::GraphicsWindow::ALT_MASK;
 
     // override builtin behavior: "focus on next cell", "close window"
     if(chr == '\t' || chr == '\x1b')
@@ -620,7 +622,8 @@ void InitMainMenu(NSMenu *mainMenu) {
                 stringByReplacingOccurrencesOfString:@"&" withString:@""];
 
             unichar accel_char = entry->accel &
-                ~(GraphicsWindow::SHIFT_MASK | GraphicsWindow::CTRL_MASK);
+                ~(GraphicsWindow::SHIFT_MASK | GraphicsWindow::CTRL_MASK |
+                  GraphicsWindow::ALT_MASK);
             if(accel_char > GraphicsWindow::FUNCTION_KEY_BASE &&
                     accel_char <= GraphicsWindow::FUNCTION_KEY_BASE + 12)
                 accel_char = NSF1FunctionKey + (accel_char - GraphicsWindow::FUNCTION_KEY_BASE - 1);
@@ -634,6 +637,8 @@ void InitMainMenu(NSMenu *mainMenu) {
                 modifierMask |= NSShiftKeyMask;
             else if(entry->accel & GraphicsWindow::CTRL_MASK)
                 modifierMask |= NSCommandKeyMask;
+            else if(entry->accel & GraphicsWindow::ALT_MASK)
+                modifierMask |= NSAlternateKeyMask;
             [menuItem setKeyEquivalentModifierMask:modifierMask];
 
             [menuItem setTag:(NSInteger)entry];

@@ -617,6 +617,8 @@ protected:
             chr |= GraphicsWindow::SHIFT_MASK;
         if(event->state & GDK_CONTROL_MASK)
             chr |= GraphicsWindow::CTRL_MASK;
+        if(event->state & GDK_MOD1_MASK)
+            chr |= GraphicsWindow::ALT_MASK;
 
         if(chr && SS.GW.KeyDown(chr))
             return true;
@@ -889,7 +891,8 @@ public:
             break;
 
             default:
-            accel_key = _entry.accel & ~(GraphicsWindow::SHIFT_MASK | GraphicsWindow::CTRL_MASK);
+            accel_key = _entry.accel & ~(GraphicsWindow::SHIFT_MASK | GraphicsWindow::CTRL_MASK |
+                                         GraphicsWindow::ALT_MASK);
             if(accel_key > GraphicsWindow::FUNCTION_KEY_BASE &&
                     accel_key <= GraphicsWindow::FUNCTION_KEY_BASE + 12)
                 accel_key = GDK_KEY_F1 + (accel_key - GraphicsWindow::FUNCTION_KEY_BASE - 1);
@@ -900,6 +903,8 @@ public:
                 accel_mods |= Gdk::SHIFT_MASK;
             if(_entry.accel & GraphicsWindow::CTRL_MASK)
                 accel_mods |= Gdk::CONTROL_MASK;
+            if(_entry.accel & GraphicsWindow::ALT_MASK)
+                accel_mods |= Gdk::MOD1_MASK;
         }
 
         MenuItem::set_label(label);

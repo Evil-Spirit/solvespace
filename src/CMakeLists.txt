@@ -79,42 +79,34 @@ endif()
 
 # generated files
 
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
 file(GLOB icons "${CMAKE_CURRENT_SOURCE_DIR}/icons/*.png")
+add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/generated/icons.cpp"
+           "${CMAKE_CURRENT_BINARY_DIR}/generated/icons.h"
+    COMMAND png2c
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/icons.cpp"
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/icons.h"
+            ${icons}
+    DEPENDS png2c ${icons})
 
-if(PERL_FOUND AND PERLMODULES_FOUND)
-    add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/built/icons.h"
-               "${CMAKE_CURRENT_SOURCE_DIR}/built/icons-proto.h"
-        COMMAND "${PERL_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/png2c.pl"
-                "${CMAKE_CURRENT_SOURCE_DIR}/built/icons.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}/built/icons-proto.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}"
-        MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/png2c.pl"
-        DEPENDENCIES ${icons})
-
-    add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapextra.table.h"
-        COMMAND "${PERL_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/pngchar2c.pl"
-                "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapextra.table.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}"
-        MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/pngchar2c.pl"
-        DEPENDENCIES ${icons})
-endif()
-
-if(WIN32 AND NOT DISABLE_TTF2C)
-    add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapfont.table.h"
-        COMMAND ttf2c "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapfont.table.h")
-endif()
+file(GLOB chars "${CMAKE_CURRENT_SOURCE_DIR}/fonts/private/*.png")
+list(SORT chars)
+add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/generated/bitmapfont.table.h"
+    COMMAND unifont2c
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/bitmapfont.table.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/fonts/unifont-8.0.01.hex.gz"
+            ${chars}
+    DEPENDS unifont2c ${chars})
 
 set(generated_HEADERS
-    built/bitmapextra.table.h
-    built/bitmapfont.table.h
-    built/icons-proto.h
-    built/icons.h)
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/bitmapfont.table.h
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/icons.h)
 
-set_source_files_properties(${generated_HEADERS}
-    PROPERTIES GENERATED TRUE)
+set(generated_SOURCES
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/icons.cpp)
 
 # platform dependencies
 
@@ -307,6 +299,7 @@ add_executable(solvespace WIN32 MACOSX_BUNDLE
     ${platform_HEADERS}
     ${platform_SOURCES}
     ${platform_BUNDLED_RESOURCES}
+    ${generated_SOURCES}
     ${generated_HEADERS}
     ${solvespace_HEADERS}
     ${solvespace_SOURCES})

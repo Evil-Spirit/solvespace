@@ -19,6 +19,7 @@
 #define ESC   ESCAPE_KEY
 #define S     SHIFT_MASK
 #define C     CTRL_MASK
+#define A     ALT_MASK
 #define F(k)  (FUNCTION_KEY_BASE+(k))
 #define IN    MENU_ITEM_NORMAL
 #define IC    MENU_ITEM_CHECK
@@ -139,7 +140,7 @@ const GraphicsWindow::MenuEntry GraphicsWindow::menu[] = {
 { 1, "&On Point / Curve / Plane",   MNU_ON_ENTITY,      'O',     IN, mCon  },
 { 1, "E&qual Length / Radius / Angle", MNU_EQUAL,       'Q',     IN, mCon  },
 { 1, "Length Ra&tio",               MNU_RATIO,          'Z',     IN, mCon  },
-{ 1, "Length Diff&erence",          MNU_DIFFERENCE,     S|'Z',   IN, mCon  },
+{ 1, "Length Diff&erence",          MNU_DIFFERENCE,     A|'Z',   IN, mCon  },
 { 1, "At &Midpoint",                MNU_AT_MIDPOINT,    'M',     IN, mCon  },
 { 1, "S&ymmetric",                  MNU_SYMMETRIC,      'Y',     IN, mCon  },
 { 1, "Para&llel / Tangent",         MNU_PARALLEL,       'L',     IN, mCon  },
@@ -187,6 +188,7 @@ bool SolveSpace::MakeAcceleratorLabel(int accel, char *out) {
 
     const char *ctrl  = accel & GraphicsWindow::CTRL_MASK  ? "Ctrl+"  : "";
     const char *shift = accel & GraphicsWindow::SHIFT_MASK ? "Shift+" : "";
+    const char *alt   = accel & GraphicsWindow::ALT_MASK   ? "Alt+"   : "";
 
     char buf[8];
     buf[0] = (char)(accel & 0xff);
@@ -210,7 +212,7 @@ bool SolveSpace::MakeAcceleratorLabel(int accel, char *out) {
     if(key[0] <  '!' || key[0] >  '~') oops();
     if(key[0] >= 'a' && key[0] <= 'z') oops();
 
-    sprintf(out, "%s%s%s", ctrl, shift, key);
+    sprintf(out, "%s%s%s%s", ctrl, alt, shift, key);
     return true;
 }
 

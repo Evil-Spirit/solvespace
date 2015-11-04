@@ -436,7 +436,8 @@ public:
     };
     enum {
         SHIFT_MASK = 0x100,
-        CTRL_MASK  = 0x200
+        CTRL_MASK  = 0x200,
+        ALT_MASK   = 0x400,
     };
     enum MenuItemKind {
         MENU_ITEM_NORMAL = 0,

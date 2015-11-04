@@ -870,7 +870,7 @@ void Constraint::DrawOrGetDistance(Vector *labelPos) {
 
                 DoEqualLenTicks(a, b, gn);
             }
-            if( (type == LENGTH_RATIO) || (type == LENGTH_DIFFERENCE) ) {
+            if((type == LENGTH_RATIO) || (type == LENGTH_DIFFERENCE)) {
                 Vector ref = ((a.Plus(b)).ScaledBy(0.5)).Plus(disp.offset);
                 DoLabel(ref, labelPos, gr, gu);
             }

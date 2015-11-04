@@ -601,6 +601,7 @@ static bool ProcessKeyDown(WPARAM wParam)
     }
     if(GetAsyncKeyState(VK_SHIFT)   & 0x8000) c |= GraphicsWindow::SHIFT_MASK;
     if(GetAsyncKeyState(VK_CONTROL) & 0x8000) c |= GraphicsWindow::CTRL_MASK;
+    if(GetAsyncKeyState(VK_MENU)    & 0x8000) c |= GraphicsWindow::ALT_MASK;
 
     switch(c) {
         case GraphicsWindow::SHIFT_MASK | '.': c = '>'; break;
@@ -693,8 +694,13 @@ int64_t SolveSpace::GetMilliseconds(void)
 
 int64_t SolveSpace::GetUnixTime(void)
 {
+#ifdef __MINGW32__
     time_t ret;
     time(&ret);
+#else
+    __time64_t ret;
+    _time64(&ret);
+#endif
     return (int64_t)ret;
 }
 
