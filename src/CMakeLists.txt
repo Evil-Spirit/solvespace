@@ -79,8 +79,9 @@ endif()
 
 # generated files
 
-file(GLOB icons "${CMAKE_CURRENT_SOURCE_DIR}/icons/*.png")
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+file(GLOB icons "${CMAKE_CURRENT_SOURCE_DIR}/icons/*.png")
 add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/generated/icons.cpp"
            "${CMAKE_CURRENT_BINARY_DIR}/generated/icons.h"
@@ -90,32 +91,22 @@ add_custom_command(
             ${icons}
     DEPENDS png2c ${icons})
 
-if(PERL_FOUND AND PERLMODULES_FOUND)
-    add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapextra.table.h"
-        COMMAND "${PERL_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/pngchar2c.pl"
-                "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapextra.table.h"
-                "${CMAKE_CURRENT_SOURCE_DIR}"
-        MAIN_DEPENDENCY "${CMAKE_CURRENT_SOURCE_DIR}/pngchar2c.pl"
-        DEPENDS ${icons})
-endif()
-
-if(WIN32 AND NOT DISABLE_TTF2C)
-    add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapfont.table.h"
-        COMMAND ttf2c "${CMAKE_CURRENT_SOURCE_DIR}/built/bitmapfont.table.h")
-endif()
+file(GLOB chars "${CMAKE_CURRENT_SOURCE_DIR}/fonts/private/*.png")
+list(SORT chars)
+add_custom_command(
+    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/generated/bitmapfont.table.h"
+    COMMAND unifont2c
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/bitmapfont.table.h"
+            "${CMAKE_CURRENT_SOURCE_DIR}/fonts/unifont-8.0.01.hex.gz"
+            ${chars}
+    DEPENDS unifont2c ${chars})
 
 set(generated_HEADERS
-    built/bitmapextra.table.h
-    built/bitmapfont.table.h
+    ${CMAKE_CURRENT_BINARY_DIR}/generated/bitmapfont.table.h
     ${CMAKE_CURRENT_BINARY_DIR}/generated/icons.h)
 
 set(generated_SOURCES
     ${CMAKE_CURRENT_BINARY_DIR}/generated/icons.cpp)
-
-set_source_files_properties(${generated_HEADERS}
-    PROPERTIES GENERATED TRUE)
 
 # platform dependencies
 

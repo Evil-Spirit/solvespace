@@ -19,11 +19,6 @@ project(solvespace)
 set(solvespace_VERSION_MAJOR 2)
 set(solvespace_VERSION_MINOR 1)
 
-if(WIN32)
-    # ttf2c takes 10 minutes (!) on Appveyor CI
-    set(DISABLE_TTF2C CACHE BOOL "Disable font regeneration with ttf2c, for use on CI")
-endif()
-
 if(NOT WIN32 AND NOT APPLE)
     set(GUI gtk2 CACHE STRING "GUI toolkit to use (one of: gtk2 gtk3)")
 endif()
@@ -61,12 +56,6 @@ endif()
 CHECK_INCLUDE_FILE("stdint.h" HAVE_STDINT_H)
 
 find_package(OpenGL REQUIRED)
-
-find_package(Perl)
-find_package(PerlModules COMPONENTS GD)
-if(NOT (PERL_FOUND AND PERLMODULES_FOUND))
-    message(STATUS "Perl with GD not found; icons will not be regenerated if modified")
-endif()
 
 if(WIN32)
     find_package(PNG)
@@ -114,6 +103,7 @@ else() # Linux and compatible systems
 
     # Use freedesktop's pkg-config to locate everything.
     find_package(PkgConfig REQUIRED)
+    pkg_check_modules(ZLIB REQUIRED zlib)
     pkg_check_modules(PNG REQUIRED libpng)
     pkg_check_modules(FONTCONFIG REQUIRED fontconfig)
     pkg_check_modules(JSONC REQUIRED json-c)
