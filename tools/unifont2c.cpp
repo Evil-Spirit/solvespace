@@ -89,7 +89,8 @@ int main(int argc, char** argv) {
     if(argc < 3) {
         fprintf(stderr, "Usage: %s <header/source out> <unifont.hex> <png glyph>...\n"
                         "  where <png glyph>s are mapped into private use area\n"
-                        "  starting at U+0080.\n");
+                        "  starting at U+0080.\n",
+                        argv[0]);
         return 1;
     }
 

@@ -111,7 +111,7 @@ and point cmake-gui to the source tree and that directory. Press
 "Configure" and "Generate", then open `build\solvespace.sln` with
 Visual C++ and build it.
 
-Alternatuively it is possible to build SolveSpace using [MinGW][mingw].
+Alternatively it is possible to build SolveSpace using [MinGW][mingw].
 Run cmake-gui as described above but after pressing "Configure" select
 the "MSYS Makefiles" generator. After that, run `make` in the `build`
 directory; make sure that the MinGW compiler is in your `PATH`.

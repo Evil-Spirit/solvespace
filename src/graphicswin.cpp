@@ -140,7 +140,7 @@ const GraphicsWindow::MenuEntry GraphicsWindow::menu[] = {
 { 1, "&On Point / Curve / Plane",   MNU_ON_ENTITY,      'O',     IN, mCon  },
 { 1, "E&qual Length / Radius / Angle", MNU_EQUAL,       'Q',     IN, mCon  },
 { 1, "Length Ra&tio",               MNU_RATIO,          'Z',     IN, mCon  },
-{ 1, "Length Diff&erence",          MNU_DIFFERENCE,     A|'Z',   IN, mCon  },
+{ 1, "Length Diff&erence",          MNU_DIFFERENCE,     'J',     IN, mCon  },
 { 1, "At &Midpoint",                MNU_AT_MIDPOINT,    'M',     IN, mCon  },
 { 1, "S&ymmetric",                  MNU_SYMMETRIC,      'Y',     IN, mCon  },
 { 1, "Para&llel / Tangent",         MNU_PARALLEL,       'L',     IN, mCon  },
@@ -390,7 +390,7 @@ void GraphicsWindow::ZoomToFit(bool includingInvisibles) {
         if(EXACT(dy != 0)) scaley = 0.9*height/dy;
         scale = min(scalex, scaley);
 
-        scale = min(300, scale);
+        scale = min(300.0, scale);
         scale = max(0.003, scale);
     }
 

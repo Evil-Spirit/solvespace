@@ -74,7 +74,8 @@ void write_png(FILE *out, const char *filename) {
 
 int main(int argc, char** argv) {
     if(argc < 3) {
-        fprintf(stderr, "Usage: %s <source out> <header out> <png in>...\n");
+        fprintf(stderr, "Usage: %s <source out> <header out> <png in>...\n",
+                        argv[0]);
         return 1;
     }
 
