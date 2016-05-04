@@ -165,16 +165,32 @@ struct BspUtil {
     
     // triangle operations
     STriangle *tr;
-    STriangle btri; // also as alone
-    STriangle ctri;
-    Vector quad[4];
-    
+    STriangle *btri; // also as alone
+    STriangle *ctri;
+
     // convex operations
-    Vector on[2];
+    Vector *on;
     int npos;
     int nneg;
-    Vector *vpos;
+    Vector *vpos;   // also as quad
     Vector *vneg;
+
+    void AllocOn() {
+        on = (Vector *)AllocTemporary(sizeof(Vector) * 2);
+    }
+
+    void AllocTriangle() {
+        btri = (STriangle *)AllocTemporary(sizeof(STriangle));
+    }
+
+    void AllocTriangles() {
+        btri = (STriangle *)AllocTemporary(sizeof(STriangle) * 2);
+        ctri = &btri[1];
+    }
+
+    void AllocQuad() {
+        vpos = (Vector *)AllocTemporary(sizeof(Vector) * 4);
+    }
 
     void AllocClassify(int size) {
         // Allocate a one big piece is faster than a small ones.
@@ -222,6 +238,7 @@ struct BspUtil {
         negc = 0;
         
         AllocClassify(cnt);
+        AllocOn();
         
         for(int i = 0; i < cnt; i++) {
             double dt = bsp->n.Dot(vertex[i]);
@@ -338,9 +355,10 @@ struct BspUtil {
         } else if(isOn[2]) { a = tr->c; b = tr->a; c = tr->b; bpos = isPos[0];
         } else ssassert(false, "Impossible");
 
+        AllocTriangles();
         Vector bPc = bsp->IntersectionWith(b, c);
-        btri = STriangle::From(tr->meta, a, b, bPc);
-        ctri = STriangle::From(tr->meta, c, a, bPc);
+        *btri = STriangle::From(tr->meta, a, b, bPc);
+        *ctri = STriangle::From(tr->meta, c, a, bPc);
     
         if(insertEdge) {
             SEdge se = SEdge::From(a, bPc);
@@ -368,17 +386,19 @@ struct BspUtil {
 
         Vector aPb = bsp->IntersectionWith(a, b);
         Vector cPa = bsp->IntersectionWith(c, a);
+        AllocTriangle();
+        AllocQuad();
 
-        btri = STriangle::From(tr->meta, a, aPb, cPa);
+        *btri = STriangle::From(tr->meta, a, aPb, cPa);
         
-        quad[0] = aPb;
-        quad[1] = b;
-        quad[2] = c;
-        quad[3] = cPa;
+        vpos[0] = aPb;
+        vpos[1] = b;
+        vpos[2] = c;
+        vpos[3] = cPa;
 
         if(insertEdge) {
             SEdge se = SEdge::From(aPb, cPa);
-            bsp->edges = SBsp2::InsertOrCreateEdge(bsp->edges, &se, bsp->n, btri.Normal());
+            bsp->edges = SBsp2::InsertOrCreateEdge(bsp->edges, &se, bsp->n, btri->Normal());
         }
         
         return posc == 2 && negc == 1;
@@ -467,22 +487,22 @@ void SBsp3::Insert(STriangle *tr, SMesh *instead) {
     // The polygon must be split into two triangles, one above, one below.
     if(u->posc == 1 && u->negc == 1 && u->onc == 1) {
         if(u->SplitIntoTwoTriangles(!instead)) {
-            InsertHow(BspClass::POS, &u->btri, instead);
-            InsertHow(BspClass::NEG, &u->ctri, instead);
+            InsertHow(BspClass::POS, u->btri, instead);
+            InsertHow(BspClass::NEG, u->ctri, instead);
         } else {
-            InsertHow(BspClass::POS, &u->ctri, instead);
-            InsertHow(BspClass::NEG, &u->btri, instead);
+            InsertHow(BspClass::POS, u->ctri, instead);
+            InsertHow(BspClass::NEG, u->btri, instead);
         }
         return;
     }
 
     // The polygon must be split into two pieces: a triangle and a quad.
     if(u->SplitIntoTwoPieces(!instead)) {
-        InsertConvexHow(BspClass::POS, tr->meta, u->quad, 4, instead);
-        InsertHow(BspClass::NEG, &u->btri, instead);
+        InsertConvexHow(BspClass::POS, tr->meta, u->vpos, 4, instead);
+        InsertHow(BspClass::NEG, u->btri, instead);
     } else {
-        InsertConvexHow(BspClass::NEG, tr->meta, u->quad, 4, instead);
-        InsertHow(BspClass::POS, &u->btri, instead);
+        InsertConvexHow(BspClass::NEG, tr->meta, u->vpos, 4, instead);
+        InsertHow(BspClass::POS, u->btri, instead);
     }
 
 }
