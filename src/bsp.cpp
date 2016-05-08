@@ -214,18 +214,18 @@ struct BspUtil {
         AllocClassify(3);
         
         double dt[3] = { (tr->a).Dot(bsp->n), (tr->b).Dot(bsp->n), (tr->c).Dot(bsp->n) };
-        
+        double d = bsp->d;
         // Count vertices in the plane
         for(int i = 0; i < 3; i++) {
-            if(fabs(dt[i] - bsp->d) < LENGTH_EPS) {
-                onc++;
-                isOn[i] = true;
-            } else if(dt[i] > bsp->d) {
+            if(dt[i] > d + LENGTH_EPS) {
                 posc++;
                 isPos[i] = true;
-            } else {
+            } else if(dt[i] < d - LENGTH_EPS) {
                 negc++;
                 isNeg[i] = true;
+            } else {
+                onc++;
+                isOn[i] = true;
             }
         }
     }
