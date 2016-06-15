@@ -327,34 +327,36 @@ bool SMesh::IsEmpty() const {
 }
 
 uint32_t SMesh::FirstIntersectionWith(Point2d mp) const {
-    Vector p0 = Vector::From(mp.x, mp.y, 0);
-    Vector gn = Vector::From(0, 0, 1);
+    Vector rayPoint = SS.GW.UnProjectPoint3(Vector::From(mp.x, mp.y, 0.0));
+    Vector rayDir = SS.GW.UnProjectPoint3(Vector::From(mp.x, mp.y, 1.0)).Minus(rayPoint);
+    int tri = Raytrace(rayPoint, rayDir, NULL);
+    if(tri == -1) return 0;
+    return l.elem[tri].meta.face;
+}
 
+int SMesh::Raytrace(const Vector &rayPoint, const Vector &rayDir, Vector *intersection) const {
+    
+    Vector inter;
+    Vector *pinter = (intersection != NULL) ? &inter : NULL;
+
+    double t;
     double maxT = -1e12;
-    uint32_t face = 0;
-
-    int i;
-    for(i = 0; i < l.n; i++) {
+    
+    int triangle = -1;
+    
+    for(int i = 0; i < l.n; i++) {
         if(l.elem[i].meta.face == 0) continue;
-        STriangle tr = l.elem[i];
-        tr.a = SS.GW.ProjectPoint3(tr.a);
-        tr.b = SS.GW.ProjectPoint3(tr.b);
-        tr.c = SS.GW.ProjectPoint3(tr.c);
+        const STriangle &tr = l.elem[i];
+        
+        if(!tr.Raytrace(rayPoint, rayDir, pinter, &t)) continue;
 
-        Vector n = tr.Normal();
-
-        if(n.Dot(gn) < LENGTH_EPS) continue; // back-facing or on edge
-
-        if(tr.ContainsPointProjd(gn, p0)) {
-            // Let our line have the form r(t) = p0 + gn*t
-            double t = -(n.Dot((tr.a).Minus(p0)))/(n.Dot(gn));
-            if(t > maxT) {
-                maxT = t;
-                face = tr.meta.face;
-            }
+        if(t > maxT) {
+            maxT = t;
+            triangle = i;
+            if(intersection) *intersection = *pinter;
         }
     }
-    return face;
+    return triangle;
 }
 
 STriangleLl *STriangleLl::Alloc()
@@ -759,8 +761,8 @@ void SKdNode::SplitLinesAgainstTriangle(SEdgeList *sel, STriangle *tr) const {
 
             if(occluded) {
                 se->tag = 1;
-            }
         }
+    }
     }
 }
 

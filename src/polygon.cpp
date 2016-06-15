@@ -42,6 +42,51 @@ bool STriangle::ContainsPointProjd(Vector n, Vector p) const {
     return true;
 }
 
+bool STriangle::Raytrace(const Vector &rayPoint, const Vector &rayDir, 
+                         Vector *intersection, double *tOut) const {
+    // Idea: Tomas Moeller and Ben Trumbore
+    // in Fast, Minimum Storage Ray/Triangle Intersection
+
+    // Find vectors for two edges sharing vert0
+    Vector edge1 = b.Minus(a);
+    Vector edge2 = c.Minus(a);
+
+    // Begin calculating determinant - also used to calculate U parameter
+    Vector pvec = rayDir.Cross(edge2);
+
+    // If determinant is near zero, ray lies in plane of triangle
+    double det = edge1.Dot(pvec);
+
+    //
+    if(-det < LENGTH_EPS) return false;
+    double inv_det = 1.0f / det;
+
+    // Calculate distance from vert0 to ray origin
+    Vector tvec = rayPoint.Minus(a);
+
+    // Calculate U parameter and test bounds
+    double u = tvec.Dot(pvec) * inv_det;
+    if (u < 0.0f || u > 1.0f) return false;
+
+    // Prepare to test V parameter
+    Vector qvec = tvec.Cross(edge1);
+
+    // Calculate V parameter and test bounds
+    double v = rayDir.Dot(qvec) * inv_det;
+    if (v < 0.0f || u + v > 1.0f) return false;
+
+    // Calculate t, ray intersects triangle
+    double t = edge2.Dot(qvec) * inv_det;
+
+    // Calculate intersection point and test ray length and direction
+    //if ((fs && t < 0.0f) || (fd && t > 1.0f)) return false;
+    //if (t < 0.0f) return false;
+    if(tOut != NULL) *tOut = t;
+    if(intersection != NULL) *intersection = rayPoint.Plus(rayDir.ScaledBy(t));
+
+    return true;
+}
+
 void STriangle::FlipNormal() {
     swap(a, b);
     swap(an, bn);

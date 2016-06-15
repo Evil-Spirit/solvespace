@@ -188,6 +188,8 @@ public:
     bool ContainsPoint(Vector p) const;
     bool ContainsPointProjd(Vector n, Vector p) const;
     STriangle Transform(Vector o, Vector u, Vector v) const;
+    bool Raytrace(const Vector &rayPoint, const Vector &rayDir, 
+                  Vector *intersection, double *tOut) const;
 };
 
 class SBsp2 {
@@ -278,6 +280,7 @@ public:
     void RemapFaces(Group *g, int remap);
 
     uint32_t FirstIntersectionWith(Point2d mp) const;
+    int Raytrace(const Vector &rayPoint, const Vector &rayDir, Vector *intersection) const;
 };
 
 // A linked list of triangles
