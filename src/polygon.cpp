@@ -44,28 +44,30 @@ bool STriangle::ContainsPointProjd(Vector n, Vector p) const {
 
 bool STriangle::Raytrace(const Vector &rayPoint, const Vector &rayDir, 
                          Vector *intersection, double *tOut) const {
+    #define CROSS(a, b) { -(a.z * b.y) + (a.y * b.z), (a.z * b.x) - (a.x * b.z), -(a.y * b.x) + (a.x * b.y) }
+    #define DOT(a, b) (a.x * b.x + a.y * b.y + a.z * b.z)
     // Idea: Tomas Moeller and Ben Trumbore
     // in Fast, Minimum Storage Ray/Triangle Intersection
 
     // Find vectors for two edges sharing vert0
-    Vector edge1 = b.Minus(a);
-    Vector edge2 = c.Minus(a);
+    Vector edge1 { b.x - a.x, b.y - a.y, b.z - a.z };
+    Vector edge2 { c.x - a.x, c.y - a.y, c.z - a.z };
 
     // Begin calculating determinant - also used to calculate U parameter
-    Vector pvec = rayDir.Cross(edge2);
+    Vector pvec = CROSS(rayDir, edge2);
 
     // If determinant is near zero, ray lies in plane of triangle
-    double det = edge1.Dot(pvec);
+    double det = DOT(edge1, pvec);
 
     //
     if(-det < LENGTH_EPS) return false;
     double inv_det = 1.0f / det;
 
     // Calculate distance from vert0 to ray origin
-    Vector tvec = rayPoint.Minus(a);
+    Vector tvec { rayPoint.x - a.x, rayPoint.y - a.y, rayPoint.z - a.z };
 
     // Calculate U parameter and test bounds
-    double u = tvec.Dot(pvec) * inv_det;
+    double u = DOT(tvec, pvec) * inv_det;
     if (u < 0.0f || u > 1.0f) return false;
 
     // Prepare to test V parameter
@@ -85,6 +87,8 @@ bool STriangle::Raytrace(const Vector &rayPoint, const Vector &rayDir,
     if(intersection != NULL) *intersection = rayPoint.Plus(rayDir.ScaledBy(t));
 
     return true;
+    #undef CROSS
+    #undef DOT
 }
 
 void STriangle::FlipNormal() {
