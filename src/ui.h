@@ -659,9 +659,20 @@ public:
         bool Equals(Selection *b);
         bool HasEndpoints();
     };
+    struct SelectionInfo {
+        int zIndex;
+        double distance;
+        GraphicsWindow::Selection s;
+        
+        bool operator<(const SelectionInfo &o) const{
+            return zIndex > o.zIndex && distance < o.distance;
+        }
+    };
     Selection hover;
+    List<SelectionInfo> hoverList;
     bool hoverWasSelectedOnMousedown;
     List<Selection> selection;
+    Selection ChooseHover();
     void HitTestMakeSelection(Point2d mp);
     void ClearSelection();
     void ClearNonexistentSelectionItems();

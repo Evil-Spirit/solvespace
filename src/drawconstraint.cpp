@@ -680,7 +680,9 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
                 fill.color = RGBf(vc.x, vc.y, vc.z);
                 hcf = canvas->GetFill(fill);
             }
-
+            /*
+            // This is drawing and selection of the points-coincident constraints
+            // I have no idea what to do with selection of them.
             for(int a = 0; a < 2; a++) {
                 Vector r = camera.projRight.ScaledBy((a+1)/camera.scale);
                 Vector d = camera.projUp.ScaledBy((2-a)/camera.scale);
@@ -694,7 +696,7 @@ void Constraint::DoLayout(DrawAs how, Canvas *canvas,
                                      hcf);
                 }
 
-            }
+            }*/
             return;
         }
 

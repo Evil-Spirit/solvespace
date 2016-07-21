@@ -1211,6 +1211,7 @@ void GraphicsWindow::MouseLeftDown(double mx, double my) {
             if(!hover.IsEmpty()) {
                 hoverWasSelectedOnMousedown = IsSelected(&hover);
                 MakeSelected(&hover);
+                hover = ChooseHover();
             }
             break;
     }

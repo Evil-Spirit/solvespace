@@ -325,8 +325,23 @@ Lighting GraphicsWindow::GetLighting() const {
     lighting.lightDirection[1] = SS.lightDir[1];
     return lighting;
 }
+GraphicsWindow::Selection GraphicsWindow::ChooseHover() {
+    Selection s = {};
+    if(hoverList.n == 0) return s;
+    s = hoverList.elem[0].s;
+    
+    // Hover the next unselected item in the hoverList
+    for(int i = 0; i < hoverList.n; i++) {
+        if(IsSelected(&hoverList.elem[i].s)) continue;
+        s = hoverList.elem[i].s;
+        break;
+    }
+    
+    return s;
+}
 
 void GraphicsWindow::HitTestMakeSelection(Point2d mp) {
+    hoverList = {};
     Selection s = {};
 
     // Did the view projection change? If so, invalidate bounding boxes.
@@ -368,8 +383,11 @@ void GraphicsWindow::HitTestMakeSelection(Point2d mp) {
         }
 
         if(canvas.Pick([&]{ e.Draw(Entity::DrawAs::DEFAULT, &canvas); })) {
-            s = {};
-            s.entity = e.h;
+            SelectionInfo si = {};
+            si.distance = canvas.minDistance;
+            si.zIndex  = canvas.maxZIndex;
+            si.s.entity = e.h;
+            hoverList.Add(&si);
         }
     }
 
@@ -377,13 +395,17 @@ void GraphicsWindow::HitTestMakeSelection(Point2d mp) {
     if(pending.operation == Pending::NONE) {
         // Constraints
         for(Constraint &c : SK.constraint) {
-            if(!c.IsVisible()) continue;
-
             if(canvas.Pick([&]{ c.Draw(Constraint::DrawAs::DEFAULT, &canvas); })) {
-                s = {};
-                s.constraint = c.h;
+                SelectionInfo si = {};
+                si.distance = canvas.minDistance;
+                si.zIndex  = canvas.maxZIndex;
+                si.s.constraint = c.h;
+                hoverList.Add(&si);
             }
         }
+
+        std::sort(hoverList.begin(), hoverList.end());
+        s = ChooseHover();
 
         // Faces, from the triangle mesh; these are lowest priority
         if(s.constraint.v == 0 && s.entity.v == 0 && showShaded && showFaces) {
@@ -574,12 +596,12 @@ void GraphicsWindow::DrawPersistent(Canvas *canvas) {
                 break;
 
             case DrawOccludedAs::STIPPLED:
-                e.Draw(Entity::DrawAs::HIDDEN, canvas);
+            e.Draw(Entity::DrawAs::HIDDEN, canvas);
                 /* fallthrough */
             case DrawOccludedAs::INVISIBLE:
-                e.Draw(Entity::DrawAs::DEFAULT, canvas);
+        e.Draw(Entity::DrawAs::DEFAULT, canvas);
                 break;
-        }
+    }
     }
 
     // Draw filled paths in all groups, when those filled paths were requested
@@ -611,7 +633,7 @@ void GraphicsWindow::Draw(Canvas *canvas) {
         // Place the background at the very back of the Z order.
         Canvas::Fill fillBackground = {};
         fillBackground.color = RgbaColor::From(255, 255, 255, 255);
-        fillBackground.layer = Canvas::Layer::BACK;
+        fillBackground.layer  = Canvas::Layer::BACK;
         Canvas::hFill hcfBackground = canvas->GetFill(fillBackground);
 
         canvas->DrawPixmap(SS.bgImage.pixmap,
@@ -738,7 +760,7 @@ void GraphicsWindow::Paint() {
     width = w;
     height = h;
 
-    Camera   camera   = GetCamera();
+    Camera camera = GetCamera();
     Lighting lighting = GetLighting();
 
     if(!SS.ActiveGroupsOkay()) {

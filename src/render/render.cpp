@@ -328,7 +328,7 @@ void ObjectPicker::DoCompare(double distance, int zIndex, int comparePosition) {
 }
 
 void ObjectPicker::DoQuad(const Vector &a, const Vector &b, const Vector &c, const Vector &d,
-                          int zIndex, int comparePosition) {
+                           int zIndex, int comparePosition) {
     Point2d corners[4] = {
         camera.ProjectPoint(a),
         camera.ProjectPoint(b),
@@ -377,8 +377,8 @@ void ObjectPicker::DrawOutlines(const SOutlineList &ol, hStroke hcs, DrawOutline
 }
 
 void ObjectPicker::DrawVectorText(const std::string &text, double height,
-                                  const Vector &o, const Vector &u, const Vector &v,
-                                  hStroke hcs) {
+                                   const Vector &o, const Vector &u, const Vector &v,
+                                   hStroke hcs) {
     Stroke *stroke = strokes.FindById(hcs);
     double w = VectorFont::Builtin()-> GetWidth(height, text),
            h = VectorFont::Builtin()->GetHeight(height);
@@ -414,13 +414,15 @@ void ObjectPicker::DrawFaces(const SMesh &m, const std::vector<uint32_t> &faces,
 }
 
 void ObjectPicker::DrawPixmap(std::shared_ptr<const Pixmap> pm,
-                              const Vector &o, const Vector &u, const Vector &v,
-                              const Point2d &ta, const Point2d &tb, Canvas::hFill hcf) {
+                               const Vector &o, const Vector &u, const Vector &v,
+                               const Point2d &ta, const Point2d &tb, Canvas::hFill hcf) {
     ssassert(false, "Not implemented");
 }
 
 bool ObjectPicker::Pick(std::function<void()> drawFn) {
     minDistance = VERY_POSITIVE;
+    maxZIndex = -1000;
+
     drawFn();
     return minDistance < selRadius;
 }
