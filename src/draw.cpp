@@ -330,10 +330,12 @@ GraphicsWindow::Selection GraphicsWindow::ChooseHover() {
     if(hoverList.n == 0) return s;
     s = hoverList.elem[0].s;
     
-    // Hover the next unselected item in the hoverList
+    // Select the next unselected after selected
     for(int i = 0; i < hoverList.n; i++) {
-        if(IsSelected(&hoverList.elem[i].s)) continue;
-        s = hoverList.elem[i].s;
+        if(!IsSelected(&hoverList.elem[i].s)) continue;
+        if(i + 1 >= hoverList.n) break;
+        if(IsSelected(&hoverList.elem[i + 1].s)) continue;
+        s = hoverList.elem[i + 1].s;
         break;
     }
     

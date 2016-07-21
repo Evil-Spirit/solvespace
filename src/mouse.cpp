@@ -1210,6 +1210,12 @@ void GraphicsWindow::MouseLeftDown(double mx, double my) {
             ClearPending();
             if(!hover.IsEmpty()) {
                 hoverWasSelectedOnMousedown = IsSelected(&hover);
+                // This is implementation of the "select by order"
+                // When we click, we select the next entity under the mouse
+                // We can do it as option or by ctrl
+                for(SelectionInfo &si : hoverList) {
+                    MakeUnselected(&si.s, false);
+                }
                 MakeSelected(&hover);
                 hover = ChooseHover();
             }
