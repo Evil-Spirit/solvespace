@@ -106,9 +106,11 @@ static void ssglDepthRange(Canvas::Layer layer, int zIndex) {
     }
 
     switch(layer) {
-        case Canvas::Layer::FRONT:
-            glDepthRange(0.0, 0.0);
+        case Canvas::Layer::FRONT: {
+            double offset = 1.0 / (65535 * 0.8) * zIndex;
+            glDepthRange(0.1 - offset, 0.1 - offset);
             break;
+        }
 
         case Canvas::Layer::BACK:
             glDepthRange(1.0, 1.0);

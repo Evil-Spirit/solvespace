@@ -454,6 +454,9 @@ void Entity::Draw(DrawAs how, Canvas *canvas) {
         zIndex = 4;
     }
 
+    if(how == DrawAs::HOVERED) zIndex += 2;
+    if(how == DrawAs::SELECTED) zIndex += 1;
+
     hStyle hs;
     if(IsPoint()) {
         hs.v = Style::DATUM;
