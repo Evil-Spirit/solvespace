@@ -731,6 +731,15 @@ void Constraint::MenuConstrain(Command id) {
 
         default: ssassert(false, "Unexpected menu ID");
     }
+    
+    if(SK.constraint.FindByIdNoOops(c.h)) {
+        SS.SolveGroup(c.group, /*andFindFree=*/false, /*test=*/true);
+        Group *g = SK.GetGroup(c.group);
+        if(!g->IsSolvedOkay()) {
+            Error("Can't add this constraint");
+            SK.constraint.RemoveById(c.h);
+        }
+    }
 
     SS.GW.ClearSelection();
     InvalidateGraphics();

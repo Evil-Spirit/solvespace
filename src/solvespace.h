@@ -445,7 +445,7 @@ public:
     bool NewtonSolve(int tag);
 
     SolveResult Solve(Group *g, int *dof, List<hConstraint> *bad,
-                bool andFindBad, bool andFindFree);
+                bool andFindBad, bool andFindFree, bool test = false);
 
     void Clear();
 };
@@ -890,7 +890,7 @@ public:
 
     void GenerateAll(Generate type = Generate::DIRTY, bool andFindFree = false,
                      bool genForBBox = false);
-    void SolveGroup(hGroup hg, bool andFindFree);
+    void SolveGroup(hGroup hg, bool andFindFree, bool test = false);
     void SolveGroupAndReport(hGroup hg, bool andFindFree);
     void MarkDraggedParams();
     void ForceReferences();

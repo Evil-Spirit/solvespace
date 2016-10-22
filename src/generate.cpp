@@ -493,7 +493,7 @@ void SolveSpaceUI::SolveGroupAndReport(hGroup hg, bool andFindFree) {
     }
 }
 
-void SolveSpaceUI::SolveGroup(hGroup hg, bool andFindFree) {
+void SolveSpaceUI::SolveGroup(hGroup hg, bool andFindFree, bool test) {
     int i;
     // Clear out the system to be solved.
     sys.entity.Clear();
@@ -519,7 +519,7 @@ void SolveSpaceUI::SolveGroup(hGroup hg, bool andFindFree) {
     MarkDraggedParams();
     g->solved.remove.Clear();
     SolveResult how = sys.Solve(g, &(g->solved.dof),
-                           &(g->solved.remove), /*andFindBad=*/true, andFindFree);
+                           &(g->solved.remove), /*andFindBad=*/true, andFindFree, test);
     g->solved.how = how;
     FreeAllTemporary();
 }

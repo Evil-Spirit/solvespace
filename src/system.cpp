@@ -397,7 +397,7 @@ void System::FindWhichToRemoveToFixJacobian(Group *g, List<hConstraint> *bad) {
 }
 
 SolveResult System::Solve(Group *g, int *dof, List<hConstraint> *bad,
-                  bool andFindBad, bool andFindFree)
+                  bool andFindBad, bool andFindFree, bool test)
 {
     WriteEquationsExceptFor(Constraint::NO_CONSTRAINT, g);
 
@@ -417,8 +417,9 @@ SolveResult System::Solve(Group *g, int *dof, List<hConstraint> *bad,
     // All params and equations are assigned to group zero.
     param.ClearTags();
     eq.ClearTags();
-
-    SolveBySubstitution();
+    if(!test) {
+        SolveBySubstitution();
+    }
 
     // Before solving the big system, see if we can find any equations that
     // are soluble alone. This can be a huge speedup. We don't know whether
