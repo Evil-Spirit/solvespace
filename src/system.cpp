@@ -494,18 +494,20 @@ SolveResult System::Solve(Group *g, int *dof, List<hConstraint> *bad,
     }
     // System solved correctly, so write the new values back in to the
     // main parameter table.
-    for(i = 0; i < param.n; i++) {
-        Param *p = &(param.elem[i]);
-        double val;
-        if(p->tag == VAR_SUBSTITUTED) {
-            val = param.FindById(p->substd)->val;
-        } else {
-            val = p->val;
+    if(!test) {
+        for(i = 0; i < param.n; i++) {
+            Param *p = &(param.elem[i]);
+            double val;
+            if(p->tag == VAR_SUBSTITUTED) {
+                val = param.FindById(p->substd)->val;
+            } else {
+                val = p->val;
+            }
+            Param *pp = SK.GetParam(p->h);
+            pp->val = val;
+            pp->known = true;
+            pp->free = p->free;
         }
-        Param *pp = SK.GetParam(p->h);
-        pp->val = val;
-        pp->known = true;
-        pp->free = p->free;
     }
     return rankOk ? SolveResult::OKAY : SolveResult::REDUNDANT_OKAY;
 
