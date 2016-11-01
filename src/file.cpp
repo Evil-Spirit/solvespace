@@ -556,8 +556,42 @@ void SolveSpaceUI::UpgradeLegacyData() {
                 }
                 entity.Clear();
                 param.Clear();
+                break;
             }
 
+            default:
+                break;
+        }
+    }
+
+    IdList<Param,hParam> oldParam = {};
+    SK.param.DeepCopyInto(&oldParam);
+    SS.GenerateAll(SS.Generate::REGEN);
+    for(Constraint &c : SK.constraint) {
+        switch(c.type) {
+            case Constraint::Type::PT_ON_LINE: {
+                IdList<Param,hParam> param = {};
+                c.Generate(&param);
+                bool allParamsExist = true;
+                for(Param &p : param) {
+                    if(oldParam.FindByIdNoOops(p.h) != NULL) continue;
+                    allParamsExist = false;
+                }
+                if(!allParamsExist) {
+                    EntityBase *ln = SK.GetEntity(c.entityA);
+                    EntityBase *a = SK.GetEntity(ln->point[0]);
+                    EntityBase *b = SK.GetEntity(ln->point[1]);
+                    EntityBase *p = SK.GetEntity(c.ptA);
+
+                    ExprVector ep = p->PointGetExprsInWorkplane(c.workplane);
+                    ExprVector ea = a->PointGetExprsInWorkplane(c.workplane);
+                    ExprVector eb = b->PointGetExprsInWorkplane(c.workplane);
+                    ExprVector eba = eb.Minus(ea);
+                    Param *param = SK.GetParam(c.GetValueParam());
+                    param->val = eba.Dot(ep.Minus(ea))->Eval() / eba.Dot(eba)->Eval();
+                }
+                break;
+            }
             default:
                 break;
         }

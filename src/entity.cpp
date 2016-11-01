@@ -568,6 +568,9 @@ void EntityBase::PointGetExprsInWorkplane(hEntity wrkpl, Expr **u, Expr **v) con
 }
 
 ExprVector EntityBase::PointGetExprsInWorkplane(hEntity wrkpl) const {
+    if(wrkpl.v == Entity::FREE_IN_3D.v) {
+        return PointGetExprs();
+    }
     ExprVector r;
     PointGetExprsInWorkplane(wrkpl, &r.x, &r.y);
     r.z = Expr::From(0.0);

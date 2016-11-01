@@ -569,6 +569,7 @@ public:
     uint32_t v;
 
     inline hEquation equation(int i) const;
+    hParam param(int i) const;
 };
 
 class ConstraintBase {
@@ -637,7 +638,10 @@ public:
     std::string comment;    // since comments are represented as constraints
 
     bool HasLabel() const;
+    bool HasValueParam() const;
+    hParam GetValueParam() const;
 
+    void Generate(IdList<Param, hParam> *l) const;
     void Generate(IdList<Equation,hEquation> *l) const;
     void GenerateReal(IdList<Equation,hEquation> *l) const;
     // Some helpers when generating symbolic constraint equations
@@ -874,6 +878,8 @@ inline hRequest hParam::request() const
 
 inline hEquation hConstraint::equation(int i) const
     { hEquation r; r.v = (v << 16) | (uint32_t)i; return r; }
+inline hParam hConstraint::param(int i) const
+    { hParam r; r.v = v | 0x40000000 | (uint32_t)i; return r; }
 
 inline bool hEquation::isFromConstraint() const
     { if(v & 0xc0000000) return false; else return true; }
