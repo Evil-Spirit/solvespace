@@ -740,7 +740,18 @@ void Constraint::MenuConstrain(Command id) {
             if(constraint->HasLabel() && g->solved.how == SolveResult::REDUNDANT_OKAY) {
                 constraint->reference = true;
             } else {
-                Error("Can't add this constraint");
+                TextWindow::ReportHowGroupSolved(constraint->group);
+                SS.TW.Show();
+
+                std::string message = 
+                    "Can't add this constraint because of a conflict with one of these:\n";
+                for(int i = 0; i < g->solved.remove.n; i++) {
+                    hConstraint hc = g->solved.remove.elem[i];
+                    Constraint *c = SK.constraint.FindByIdNoOops(hc);
+                    if(!c) continue;
+                    message += c->DescriptionString() + "\n";
+                }
+                Error(message.c_str());
                 SK.constraint.RemoveById(c.h);
             }
         }
