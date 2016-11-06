@@ -736,8 +736,13 @@ void Constraint::MenuConstrain(Command id) {
         SS.SolveGroup(c.group, /*andFindFree=*/false, /*test=*/true);
         Group *g = SK.GetGroup(c.group);
         if(!g->IsSolvedOkay()) {
-            Error("Can't add this constraint");
-            SK.constraint.RemoveById(c.h);
+            Constraint *constraint = SK.GetConstraint(c.h);
+            if(constraint->HasLabel() && g->solved.how == SolveResult::REDUNDANT_OKAY) {
+                constraint->reference = true;
+            } else {
+                Error("Can't add this constraint");
+                SK.constraint.RemoveById(c.h);
+            }
         }
     }
 
