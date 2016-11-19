@@ -335,6 +335,7 @@ uint32_t SMesh::FirstIntersectionWith(Point2d mp) const {
 
     int i;
     for(i = 0; i < l.n; i++) {
+        if(l.elem[i].meta.face == 0) continue;
         STriangle tr = l.elem[i];
         tr.a = SS.GW.ProjectPoint3(tr.a);
         tr.b = SS.GW.ProjectPoint3(tr.b);
