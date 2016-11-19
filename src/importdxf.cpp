@@ -13,6 +13,7 @@ class DxfReadInterface : public DRW_Interface {
 public:
     Vector blockX;
     Vector blockY;
+    Vector blockZ;
     Vector blockT;
 
     void invertXTransform() {
@@ -43,6 +44,7 @@ public:
     void clearBlockTransform() {
         blockX = Vector::From(1.0, 0.0, 0.0);
         blockY = Vector::From(0.0, 1.0, 0.0);
+        blockZ = Vector::From(0.0, 0.0, 1.0);
         blockT = Vector::From(0.0, 0.0, 0.0);
     }
 
@@ -50,6 +52,7 @@ public:
         Vector r = blockT;
         r = r.Plus(blockX.ScaledBy(v.x));
         r = r.Plus(blockY.ScaledBy(v.y));
+        r = r.Plus(blockZ.ScaledBy(v.z));
         return r;
     }
 
@@ -65,7 +68,7 @@ public:
     }
 
     Vector toVector(const DRW_Coord &c, bool transform = true) {
-        Vector result = Vector::From(c.x, c.y, 0.0);
+        Vector result = Vector::From(c.x, c.y, c.z);
         if(transform) return blockTransform(result);
         return result;
     }
@@ -76,7 +79,7 @@ public:
     }
 
     Vector toVector(const DRW_Vertex &c) {
-        Vector result = Vector::From(c.basePoint.x, c.basePoint.y, 0.0);
+        Vector result = Vector::From(c.basePoint.x, c.basePoint.y, c.basePoint.z);
         return blockTransform(result);
     }
 
@@ -563,7 +566,7 @@ public:
         double r = data.radious;
         double sa = data.staangle;
         double ea = data.endangle;
-        Vector c = Vector::From(data.basePoint.x, data.basePoint.y, 0.0);
+        Vector c = Vector::From(data.basePoint.x, data.basePoint.y, data.basePoint.z);
         Vector rvs = Vector::From(r * cos(sa), r * sin(sa), data.basePoint.z).Plus(c);
         Vector rve = Vector::From(r * cos(ea), r * sin(ea), data.basePoint.z).Plus(c);
 
@@ -652,8 +655,8 @@ public:
                 bulge = -bulge;
             }
 
-            Vector p0 = Vector::From(c0.x, c0.y, 0.0);
-            Vector p1 = Vector::From(c1.x, c1.y, 0.0);
+            Vector p0 = Vector::From(c0.x, c0.y, c0.z);
+            Vector p1 = Vector::From(c1.x, c1.y, c1.z);
             hStyle hs = styleFor(&data);
 
             if(EXACT(bulge == 0.0)) {
