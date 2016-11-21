@@ -902,6 +902,173 @@ public:
     }
 };
 
+class DxfCheck3D : public DRW_Interface {
+public:
+    bool is3d;
+    double epsilon;
+    
+    void addEntity(DRW_Entity *e) {
+        switch(e->eType) {
+            case DRW::POINT:
+                addPoint(*static_cast<DRW_Point *>(e));
+                break;
+            case DRW::LINE:
+                addLine(*static_cast<DRW_Line *>(e));
+                break;
+            case DRW::ARC:
+                addArc(*static_cast<DRW_Arc *>(e));
+                break;
+            case DRW::CIRCLE:
+                addCircle(*static_cast<DRW_Circle *>(e));
+                break;
+            case DRW::POLYLINE:
+                addPolyline(*static_cast<DRW_Polyline *>(e));
+                break;
+            case DRW::LWPOLYLINE:
+                addLWPolyline(*static_cast<DRW_LWPolyline *>(e));
+                break;
+            case DRW::SPLINE:
+                addSpline(static_cast<DRW_Spline *>(e));
+                break;
+            case DRW::INSERT:
+                addInsert(*static_cast<DRW_Insert *>(e));
+                break;
+            case DRW::TEXT:
+                addText(*static_cast<DRW_Text *>(e));
+                break;
+            case DRW::MTEXT:
+                addMText(*static_cast<DRW_MText *>(e));
+                break;
+            case DRW::DIMALIGNED:
+                addDimAlign(static_cast<DRW_DimAligned *>(e));
+                break;
+            case DRW::DIMLINEAR:
+                addDimLinear(static_cast<DRW_DimLinear *>(e));
+                break;
+            case DRW::DIMRADIAL:
+                addDimRadial(static_cast<DRW_DimRadial *>(e));
+                break;
+            case DRW::DIMDIAMETRIC:
+                addDimDiametric(static_cast<DRW_DimDiametric *>(e));
+                break;
+            case DRW::DIMANGULAR:
+                addDimAngular(static_cast<DRW_DimAngular *>(e));
+                break;
+            default:
+                break;
+        }
+    }
+
+    void addPoint(const DRW_Point &data) override {
+        if(data.space != DRW::ModelSpace) return;
+        checkCoord(data.basePoint);
+    }
+
+    void addLine(const DRW_Line &data) override {
+        if(data.space != DRW::ModelSpace) return;
+        checkCoord(data.basePoint);
+        checkCoord(data.secPoint);
+    }
+
+    void addArc(const DRW_Arc &data) override {
+        if(data.space != DRW::ModelSpace) return;
+        checkCoord(data.basePoint);
+    }
+
+    void addCircle(const DRW_Circle &data) override {
+        if(data.space != DRW::ModelSpace) return;
+        checkCoord(data.basePoint);
+    }
+
+    void addPolyline(const DRW_Polyline &data) override {
+        if(data.space != DRW::ModelSpace) return;
+        for(size_t i = 0; i < data.vertlist.size(); i++) {
+            checkCoord(data.vertlist[i]->basePoint);
+        }
+    }
+
+    void addSpline(const DRW_Spline *data) override {
+        if(data->space != DRW::ModelSpace) return;
+        if(data->degree != 3) return;
+        for(int i = 0; i < 4; i++) {
+            checkCoord(*data->controllist[i]);
+        }
+    }
+
+    void addInsert(const DRW_Insert &data) override {
+        if(data.space != DRW::ModelSpace) return;
+        checkCoord(data.basePoint);
+    }
+
+    void addMText(const DRW_MText &data) override {
+        if(data.space != DRW::ModelSpace) return;
+
+        DRW_MText text = data;
+        text.secPoint = text.basePoint;
+        addText(text);
+    }
+
+    void addText(const DRW_Text &data) override {
+        if(data.space != DRW::ModelSpace) return;
+        checkCoord(data.basePoint);
+        checkCoord(data.secPoint);
+    }
+
+    void addDimAlign(const DRW_DimAligned *data) override {
+        if(data->space != DRW::ModelSpace) return;
+        checkCoord(data->getDef1Point());
+        checkCoord(data->getDef2Point());
+        checkCoord(data->getTextPoint());
+    }
+
+    void addDimLinear(const DRW_DimLinear *data) override {
+        if(data->space != DRW::ModelSpace) return;
+        checkCoord(data->getDef1Point());
+        checkCoord(data->getDef2Point());
+        checkCoord(data->getTextPoint());
+    }
+
+    void addDimAngular(const DRW_DimAngular *data) override {
+        if(data->space != DRW::ModelSpace) return;
+        checkCoord(data->getFirstLine1());
+        checkCoord(data->getFirstLine2());
+        checkCoord(data->getSecondLine1());
+        checkCoord(data->getSecondLine2());
+        checkCoord(data->getTextPoint());
+    }
+
+    void addDimRadial(const DRW_DimRadial *data) override {
+        if(data->space != DRW::ModelSpace) return;
+        checkCoord(data->getCenterPoint());
+        checkCoord(data->getDiameterPoint());
+        checkCoord(data->getTextPoint());
+    }
+
+    void addDimDiametric(const DRW_DimDiametric *data) override {
+        if(data->space != DRW::ModelSpace) return;
+        checkCoord(data->getDiameter1Point());
+        checkCoord(data->getDiameter2Point());
+        checkCoord(data->getTextPoint());
+    }
+
+    void addDimAngular3P(const DRW_DimAngular3p *data) override {
+        if(data->space != DRW::ModelSpace) return;
+        DRW_DimAngular dim = *static_cast<const DRW_Dimension *>(data);
+        
+        dim.setFirstLine1(data->getVertexPoint());
+        dim.setFirstLine2(data->getFirstLine());
+        dim.setSecondLine1(data->getVertexPoint());
+        dim.setSecondLine2(data->getSecondLine());
+        addDimAngular(&dim);
+    }
+    
+    void checkCoord(const DRW_Coord &coord) {
+        if(fabs(coord.z) > epsilon) {
+            is3d = true;
+        }
+    }
+};
+
 void ImportDxf(const std::string &filename) {
     DxfReadInterface interface;
     interface.clearBlockTransform();
@@ -910,6 +1077,18 @@ void ImportDxf(const std::string &filename) {
     if(!ReadFile(filename, &data)) {
         Error("Couldn't read from '%s'", filename.c_str());
         return;
+    }
+
+    Group *activeGroup = SK.GetGroup(SS.GW.activeGroup);
+    if(activeGroup->type == Group::Type::DRAWING_WORKPLANE) {
+        DxfCheck3D check;
+        check.is3d = false;
+        check.epsilon = LENGTH_EPS;
+        std::stringstream stream(data);
+        dxfRW().read(stream, &check, /*ext=*/false);
+        if(check.is3d) {
+            Group::MenuGroup(Command::GROUP_3D);
+        }
     }
 
     SS.UndoRemember();
@@ -932,6 +1111,18 @@ void ImportDwg(const std::string &filename) {
     if(!ReadFile(filename, &data)) {
         Error("Couldn't read from '%s'", filename.c_str());
         return;
+    }
+
+    Group *activeGroup = SK.GetGroup(SS.GW.activeGroup);
+    if(activeGroup->type == Group::Type::DRAWING_WORKPLANE) {
+        DxfCheck3D check;
+        check.is3d = false;
+        check.epsilon = LENGTH_EPS;
+        std::stringstream stream(data);
+        dwgR().read(stream, &check, /*ext=*/false);
+        if(check.is3d) {
+            Group::MenuGroup(Command::GROUP_3D);
+        }
     }
 
     SS.UndoRemember();
