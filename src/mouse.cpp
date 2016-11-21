@@ -868,6 +868,7 @@ hRequest GraphicsWindow::AddRequest(Request::Type type, bool rememberForUndo) {
     // for these new parameters, or else we'll get a numerical blowup.
     r.Generate(&SK.entity, &SK.param);
     SS.MarkGroupDirty(r.group);
+    SS.ScheduleGenerateAll();
     return r.h;
 }
 
