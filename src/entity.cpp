@@ -824,6 +824,7 @@ void EntityBase::GenerateEquations(IdList<Equation,hEquation> *l) const {
         }
 
         case Type::TTF_TEXT: {
+            if(SK.GetEntity(point[0])->type != Type::POINT_IN_2D) break;
             EntityBase *b = SK.GetEntity(point[2]);
             EntityBase *c = SK.GetEntity(point[3]);
             ExprVector eb = b->PointGetExprsInWorkplane(workplane);
