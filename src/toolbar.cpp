@@ -24,6 +24,7 @@ static ToolIcon Toolbar[] = {
     { "point",           Command::DATUM_POINT,    "Sketch datum point",                               {} },
     { "construction",    Command::CONSTRUCTION,   "Toggle construction",                              {} },
     { "trim",            Command::SPLIT_CURVES,   "Split lines / curves where they intersect",        {} },
+    { "image",           Command::IMAGE,          "Image from a file",                                {} },
     { "",                Command::NONE,           "",                                                 {} },
 
     { "length",          Command::DISTANCE_DIA,   "Constrain distance / diameter / length",           {} },

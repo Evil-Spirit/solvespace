@@ -67,6 +67,7 @@ enum class Command : uint32_t {
     RECTANGLE,
     CUBIC,
     TTF_TEXT,
+    IMAGE,
     SPLIT_CURVES,
     TANGENT_ARC,
     CONSTRUCTION,
@@ -602,6 +603,7 @@ public:
         hConstraint          constraint;
 
         const char          *description;
+        std::string         filename;
 
         bool                 hasSuggestion;
         Constraint::Type     suggestion;

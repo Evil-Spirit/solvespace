@@ -151,6 +151,7 @@ enum class ContextCommand : uint32_t;
 
 extern const bool FLIP_FRAMEBUFFER;
 
+std::string MakePathAbsolute(const std::string &base, const std::string &path);
 bool PathEqual(const std::string &a, const std::string &b);
 std::string PathSepPlatformToUnix(const std::string &filename);
 std::string PathSepUnixToPlatform(const std::string &filename);
@@ -694,6 +695,12 @@ public:
     } UndoStack;
     UndoStack   undo;
     UndoStack   redo;
+
+    std::map<std::string, std::shared_ptr<Pixmap>> images;
+    std::shared_ptr<Pixmap> GetOrLoadImage(const std::string &filename, 
+                                           const std::string &relFilename,
+                                           std::string *updateFilename);
+    
     void UndoEnableMenus();
     void UndoRemember();
     void UndoUndo();

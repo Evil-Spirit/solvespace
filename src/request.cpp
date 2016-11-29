@@ -30,6 +30,7 @@ static const EntReqMapping EntReqMap[] = {
 { Request::Type::CIRCLE,          Entity::Type::CIRCLE,         1,  false,  true,   true  },
 { Request::Type::ARC_OF_CIRCLE,   Entity::Type::ARC_OF_CIRCLE,  3,  false,  true,   false },
 { Request::Type::TTF_TEXT,        Entity::Type::TTF_TEXT,       4,  false,  true,   false },
+{ Request::Type::IMAGE,           Entity::Type::IMAGE,          4,  false,  true,   false },
 };
 
 static void CopyEntityInfo(const EntReqMapping *te, int extraPoints,
@@ -88,6 +89,16 @@ void Request::Generate(IdList<Entity,hEntity> *entity,
 
     // Request-specific generation.
     switch(type) {
+        case Type::IMAGE: {
+            std::shared_ptr<Pixmap> image = SS.GetOrLoadImage(str, font, &str);
+            if(image != NULL) {
+                aspectRatio = (double)image->width / image->height;
+            }
+            if(EXACT(aspectRatio == 0.0)) {
+                aspectRatio = 1.0;
+            }
+            break;
+        }
         case Type::TTF_TEXT: {
             double actualAspectRatio = SS.fonts.AspectRatio(font, str);
             if(EXACT(actualAspectRatio != 0.0)) {
@@ -205,8 +216,9 @@ std::string Request::DescriptionString() const {
             case Type::CUBIC:           s = "cubic-bezier";   break;
             case Type::CUBIC_PERIODIC:  s = "periodic-cubic"; break;
             case Type::CIRCLE:          s = "circle";         break;
-            case Type::ARC_OF_CIRCLE:   s = "arc-of-circle;";  break;
+            case Type::ARC_OF_CIRCLE:   s = "arc-of-circle";  break;
             case Type::TTF_TEXT:        s = "ttf-text";       break;
+            case Type::IMAGE:           s = "image";          break;
         }
     }
     ssassert(s != NULL, "Unexpected request type");

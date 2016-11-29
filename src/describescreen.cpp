@@ -198,6 +198,11 @@ void TextWindow::DescribeSelection() {
                 }
                 break;
             }
+            case Entity::Type::IMAGE: {
+                Printf(false, "%FtIMAGE%E");
+                Printf(true, "  file = '%Fi%s%E'", e->str.c_str());
+                break;
+            }
 
             default:
                 Printf(true, "%Ft?? ENTITY%E");

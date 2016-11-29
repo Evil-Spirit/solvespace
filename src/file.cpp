@@ -33,6 +33,7 @@ void SolveSpaceUI::ClearExisting() {
 
     SK.entity.Clear();
     SK.param.Clear();
+    images.clear();
 }
 
 hGroup SolveSpaceUI::CreateDefaultDrawingGroup() {
@@ -255,6 +256,8 @@ void SolveSpaceUI::SaveUsingTable(int type) {
     }
 }
 
+static std::string MakePathRelative(const std::string &base, const std::string &path);
+
 bool SolveSpaceUI::SaveToFile(const std::string &filename) {
     // Make sure all the entities are regenerated up to date, since they
     // will be exported. We reload the linked files because that rewrites
@@ -286,6 +289,10 @@ bool SolveSpaceUI::SaveToFile(const std::string &filename) {
 
     for(i = 0; i < SK.request.n; i++) {
         sv.r = SK.request.elem[i];
+        if(sv.r.type == Request::Type::IMAGE) {
+            // use font as relative path
+            sv.r.font = MakePathRelative(filename, sv.r.str);
+        }
         SaveUsingTable('r');
         fprintf(fh, "AddRequest\n\n");
     }
@@ -293,6 +300,10 @@ bool SolveSpaceUI::SaveToFile(const std::string &filename) {
     for(i = 0; i < SK.entity.n; i++) {
         (SK.entity.elem[i]).CalculateNumerical(/*forExport=*/true);
         sv.e = SK.entity.elem[i];
+        if(sv.e.type == Entity::Type::IMAGE) {
+            // use font as relative path
+            sv.e.font = MakePathRelative(filename, sv.e.str);
+        }
         SaveUsingTable('e');
         fprintf(fh, "AddEntity\n\n");
     }
@@ -552,7 +563,7 @@ void SolveSpaceUI::UpgradeLegacyData() {
                     Entity *b = entity.FindById(text->point[2]);
                     Entity *c = entity.FindById(text->point[3]);
                     ExprVector bex, cex;
-                    text->TtfTextGetPointsExprs(&bex, &cex);
+                    text->TtfTextImageGetPointsExprs(&bex, &cex);
                     b->PointForceParamTo(bex.Eval());
                     c->PointForceParamTo(cex.Eval());
                 }
@@ -850,7 +861,8 @@ static std::string MakePathRelative(const std::string &base, const std::string &
     return Join(resultParts, PATH_SEP);
 }
 
-static std::string MakePathAbsolute(const std::string &base, const std::string &path)
+namespace SolveSpace {
+std::string MakePathAbsolute(const std::string &base, const std::string &path)
 {
     std::vector<std::string> resultParts = Split(base, PATH_SEP),
                              pathParts = Split(path, PATH_SEP);
@@ -868,6 +880,7 @@ static std::string MakePathAbsolute(const std::string &base, const std::string &
     }
 
     return Join(resultParts, PATH_SEP);
+}
 }
 
 static void PathSepNormalize(std::string &filename)

@@ -785,7 +785,7 @@ Vector EntityBase::EndpointFinish() const {
     } else ssassert(false, "Unexpected entity type");
 }
 
-void EntityBase::TtfTextGetPointsExprs(ExprVector *eb, ExprVector *ec) const {
+void EntityBase::TtfTextImageGetPointsExprs(ExprVector *eb, ExprVector *ec) const {
     EntityBase *a = SK.GetEntity(point[0]);
     EntityBase *o = SK.GetEntity(point[1]);
 
@@ -846,6 +846,7 @@ void EntityBase::GenerateEquations(IdList<Equation,hEquation> *l) const {
             break;
         }
 
+        case Type::IMAGE:
         case Type::TTF_TEXT: {
             if(SK.GetEntity(point[0])->type != Type::POINT_IN_2D) break;
             EntityBase *b = SK.GetEntity(point[2]);
@@ -854,7 +855,7 @@ void EntityBase::GenerateEquations(IdList<Equation,hEquation> *l) const {
             ExprVector ec = c->PointGetExprsInWorkplane(workplane);
 
             ExprVector ebp, ecp;
-            TtfTextGetPointsExprs(&ebp, &ecp);
+            TtfTextImageGetPointsExprs(&ebp, &ecp);
 
             ExprVector beq = eb.Minus(ebp);
             AddEq(l, beq.x, 0);

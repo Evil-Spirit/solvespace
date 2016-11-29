@@ -30,6 +30,43 @@ void SolveSpaceUI::UndoRedo() {
     UndoEnableMenus();
 }
 
+std::shared_ptr<Pixmap> SolveSpaceUI::GetOrLoadImage(const std::string &filename,
+                                                     const std::string &relFilename,
+                                                     std::string *updateFilename) {
+    if(filename.empty() && relFilename.empty()) return std::shared_ptr<Pixmap>(NULL);
+    auto image = SS.images.find(filename);
+
+    if(image == SS.images.end()) {
+        std::string fromRel = MakePathAbsolute(SS.saveFile, relFilename);
+        std::string forOpen = filename;
+        FILE *test = ssfopen(fromRel, "rb");
+        if(test != NULL) {
+            fclose(test);
+            forOpen = fromRel;
+        } else {
+            test = ssfopen(filename, "rb");
+            if(test == NULL) {
+                switch(LocateImportedFileYesNoCancel(relFilename, false)) {
+                case DIALOG_YES:
+                    if(GetOpenFile(&forOpen, "", PngFileFilter)) {
+                        break;
+                    }
+                    // fallthrough
+                default:
+                    forOpen = "";
+                    break;
+                }
+            } else {
+                fclose(test);
+            }
+        }
+        if(updateFilename != NULL) *updateFilename = forOpen;
+        SS.images.emplace(forOpen, Pixmap::ReadPng(forOpen));
+        image = SS.images.find(forOpen);
+    }
+    return image->second;
+}
+
 void SolveSpaceUI::UndoEnableMenus() {
     EnableMenuByCmd(Command::UNDO, undo.cnt > 0);
     EnableMenuByCmd(Command::REDO, redo.cnt > 0);

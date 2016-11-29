@@ -117,6 +117,7 @@ const GraphicsWindow::MenuEntry GraphicsWindow::menu[] = {
 { 1, "&Bezier Cubic Spline",        Command::CUBIC,            'B',     TN, mReq  },
 { 1, NULL,                          Command::NONE,             0,       TN, NULL  },
 { 1, "&Text in TrueType Font",      Command::TTF_TEXT,         'T',     TN, mReq  },
+{ 1, "&Image",                      Command::IMAGE,            0,       TN, mReq  },
 { 1, NULL,                          Command::NONE,             0,       TN, NULL  },
 { 1, "To&ggle Construction",        Command::CONSTRUCTION,     'G',     TN, mReq  },
 { 1, "Tangent &Arc at Point",       Command::TANGENT_ARC,      S|'A',   TN, mReq  },
@@ -1029,6 +1030,19 @@ void GraphicsWindow::MenuRequest(Command id) {
         case Command::WORKPLANE: s = "click origin of workplane"; goto c;
         case Command::RECTANGLE: s = "click one corner of rectangle"; goto c;
         case Command::TTF_TEXT: s = "click top left of text"; goto c;
+        case Command::IMAGE: {
+            std::string imageFile;
+            if(!GetOpenFile(&imageFile, CnfThawString("", "ImageFile"), PngFileFilter)) break;
+            CnfFreezeString(Extension(imageFile), "ImageFile");
+
+            if(Extension(imageFile) != "png") {
+                Error("Can't identify file type from file extension of "
+                      "filename '%s'; try .png", imageFile.c_str());
+                break;
+            }
+            SS.GW.pending.filename = imageFile;
+            s = "click top left of image"; goto c;
+        }
 c:
             SS.GW.pending.operation = GraphicsWindow::Pending::COMMAND;
             SS.GW.pending.command = id;
